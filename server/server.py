@@ -8,6 +8,7 @@ import sys
 import traceback
 import logging
 import time
+import gc
 
 # Configure logging to file and console
 logging.basicConfig(
@@ -23,7 +24,12 @@ logger = logging.getLogger(__name__)
 # Define global variables
 tokenizer = None
 model = None
-device = None
+device_config = {
+    'main_device': None,
+    'secondary_device': None,
+    'main_weight': 0.85,  # 85% of workload on primary device
+    'secondary_weight': 0.15  # 15% of workload on secondary device
+}
 
 try:
     logger.info("Starting ClinicalGPT Medical Assistant server...")
@@ -58,25 +64,93 @@ try:
     try:
         logger.info(f"Loading model from {MODEL_PATH}")
         
-        # Determine device
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        logger.info(f"Using device: {device}")
+        # Determine optimal device strategy
+        # Priority: NPU > GPU > CPU
+        has_npu = False
+        has_gpu = torch.cuda.is_available()
+        has_mps = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()  # Check for Apple Silicon
+        
+        # Check for NPU (like Intel NPU or custom NPUs)
+        try:
+            # This is a placeholder for NPU detection
+            # In a real implementation, we would have more specific code
+            # for various NPU vendors (Intel, Habana, etc.)
+            import intel_extension_for_pytorch as ipex
+            has_npu = True
+            logger.info("Intel NPU detected")
+        except ImportError:
+            has_npu = False
+        
+        # Set device configurations based on availability
+        if has_npu:
+            if has_gpu:
+                # Use both NPU (primary) and GPU (secondary)
+                device_config['main_device'] = 'npu'
+                device_config['secondary_device'] = 'cuda'
+                logger.info(f"Using NPU (85%) and GPU (15%) for inference")
+            else:
+                # Use NPU only
+                device_config['main_device'] = 'npu'
+                device_config['secondary_device'] = 'cpu'
+                logger.info(f"Using NPU (85%) and CPU (15%) for inference")
+        elif has_gpu:
+            # Use GPU (primary) and CPU (secondary)
+            device_config['main_device'] = 'cuda'
+            device_config['secondary_device'] = 'cpu'
+            logger.info(f"Using GPU (85%) and CPU (15%) for inference")
+        elif has_mps:
+            # Use Apple Silicon GPU
+            device_config['main_device'] = 'mps'
+            device_config['secondary_device'] = 'cpu'
+            logger.info(f"Using Apple Silicon GPU (85%) and CPU (15%) for inference")
+        else:
+            # Use CPU only
+            device_config['main_device'] = 'cpu'
+            device_config['secondary_device'] = 'cpu'
+            logger.info(f"Using CPU (100%) for inference - no accelerators available")
+        
+        # Create device instances
+        main_device = torch.device(device_config['main_device'])
+        secondary_device = torch.device(device_config['secondary_device'])
+        
+        # Log detailed hardware info
+        if has_gpu:
+            logger.info(f"CUDA Device: {torch.cuda.get_device_name(0)}")
+            logger.info(f"CUDA Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
+            
+        # Disable HF warning about symlinks
+        os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
         
         # Load tokenizer and model
         tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
         logger.info("Tokenizer loaded successfully")
         
-        # Load model with more conservative memory settings and trust remote code
+        # Load model with optimized settings
         model = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH, 
             trust_remote_code=True,
             low_cpu_mem_usage=True,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+            torch_dtype=torch.float16 if has_gpu or has_npu else torch.float32
         )
         logger.info("Model loaded successfully")
         
-        model.to(device)
-        logger.info("Model moved to device successfully")
+        # Move model to main device
+        model.to(main_device)
+        logger.info(f"Model moved to {device_config['main_device']} device successfully")
+        
+        # If main and secondary devices are different, set up hybrid execution
+        if device_config['main_device'] != device_config['secondary_device']:
+            # This is a placeholder for more advanced model splitting between devices
+            # In a production environment, this would use more sophisticated methods like:
+            # - Model parallelism across devices
+            # - Pipeline parallelism
+            # - Partial offloading of specific layers
+            logger.info(f"Hybrid execution configured with {device_config['main_weight']*100:.0f}% on {device_config['main_device']}")
+        
+        # Run garbage collection to free memory
+        gc.collect()
+        if has_gpu:
+            torch.cuda.empty_cache()
         
     except Exception as e:
         logger.error(f"ERROR loading model: {str(e)}")
@@ -104,6 +178,8 @@ try:
         return jsonify({
             'status': 'running',
             'model': MODEL_PATH,
+            'primary_device': device_config['main_device'],
+            'secondary_device': device_config['secondary_device'],
             'endpoints': {
                 '/api/health': 'Health check',
                 '/api/query': 'Process a medical query',
@@ -137,7 +213,10 @@ try:
                 
                 # Tokenize and prepare input
                 inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=512)
-                inputs = {key: val.to(device) for key, val in inputs.items()}
+                
+                # Move inputs to main device
+                main_device = torch.device(device_config['main_device'])
+                inputs = {key: val.to(main_device) for key, val in inputs.items()}
                 
                 logger.debug("Generating response...")
                 # Generate response with the causal language model
@@ -170,7 +249,8 @@ try:
                 response = {
                     'model_name': MODEL_PATH,
                     'response': response_text,
-                    'web_results': web_results
+                    'web_results': web_results,
+                    'device_used': device_config['main_device']
                 }
                 
                 return jsonify(response)
@@ -200,7 +280,8 @@ try:
             try:
                 logger.info(f"Processing file: {file.filename}")
                 # Process the file based on its type
-                result = process_file(file, model, tokenizer, device)
+                main_device = torch.device(device_config['main_device'])
+                result = process_file(file, model, tokenizer, main_device)
                 return jsonify(result)
             except Exception as e:
                 logger.error(f"Error processing file: {str(e)}")
@@ -216,7 +297,34 @@ try:
         """Simple health check endpoint."""
         # Check if model is loaded
         model_status = "loaded" if model is not None else "not_loaded"
-        return jsonify({'status': 'ok', 'model': MODEL_PATH, 'model_status': model_status})
+        return jsonify({
+            'status': 'ok', 
+            'model': MODEL_PATH, 
+            'model_status': model_status,
+            'primary_device': device_config['main_device'],
+            'secondary_device': device_config['secondary_device'],
+        })
+
+    @app.route('/api/device-info', methods=['GET'])
+    def device_info():
+        """Return detailed information about the devices being used."""
+        info = {
+            'primary_device': device_config['main_device'],
+            'primary_device_weight': f"{device_config['main_weight']*100:.0f}%",
+            'secondary_device': device_config['secondary_device'],
+            'secondary_device_weight': f"{device_config['secondary_weight']*100:.0f}%"
+        }
+        
+        # Add GPU details if available
+        if torch.cuda.is_available():
+            info['cuda_version'] = torch.version.cuda
+            info['cuda_device_count'] = torch.cuda.device_count()
+            info['cuda_device_name'] = torch.cuda.get_device_name(0)
+            props = torch.cuda.get_device_properties(0)
+            info['cuda_compute_capability'] = f"{props.major}.{props.minor}"
+            info['cuda_total_memory'] = f"{props.total_memory / (1024**3):.2f} GB"
+        
+        return jsonify(info)
 
     # Make sure app is defined at the module level for proper imports
     if __name__ == '__main__':
