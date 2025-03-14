@@ -1,0 +1,13 @@
+torch
+transformers
+flask
+requests
+beautifulsoup4
+nltk
+pandas
+scikit-learn
+tqdm
+python-dotenv
+flask-cors
+pytest
+validators

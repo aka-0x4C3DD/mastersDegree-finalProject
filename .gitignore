@@ -1,0 +1,86 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# PyCharm files
+.idea/
+
+# VS Code files
+.vscode/
+
+# Model files and weights (these can be large)
+*.pt
+*.pth
+*.bin
+*.onnx
+*.h5
+*.hdf5
+models/
+model_data/
+saved_models/
+
+# Data files
+*.csv
+*.tsv
+*.sqlite
+*.db
+data/
+datasets/
+processed_data/
+
+# Logs
+logs/
+*.log
+log.txt
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+tmp/
+temp/
+
+# Plot outputs
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.pdf
+
+# Documentation
+docs/_build/
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*.cover
