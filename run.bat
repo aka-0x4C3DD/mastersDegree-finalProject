@@ -35,35 +35,33 @@ call venv\Scripts\activate.bat
 REM Create a logs directory if it doesn't exist
 if not exist logs\ mkdir logs
 
-REM Set environment variable to disable symlinks warning
+REM Set environment variables to prevent errors
 set HF_HUB_DISABLE_SYMLINKS_WARNING=1
+set TORCH_DEVICE_BACKEND_AUTOLOAD=0
 
 REM Install dependencies
 echo Installing required packages...
 pip install -r requirements.txt
+pip install pillow accelerate
 
-
-REM Check for GPU and install appropriate packages
+REM NVIDIA GPU Support - Installing proper CUDA version for PyTorch
+echo Checking for NVIDIA GPU...
 python -c "import torch; print('CUDA Available: ' + str(torch.cuda.is_available()))"
-python -c "import torch; exit(0 if torch.cuda.is_available() else 1)" >nul 2>nul
 if %ERRORLEVEL% == 0 (
-    echo GPU detected - installing optimizations
-    pip install torchvision --index-url https://download.pytorch.org/whl/cu118
+    echo Checking PyTorch CUDA compatibility...
+    pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu118
 )
 
-REM Try to install Intel NPU extensions if available
-pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ -U
+REM Set environment variables for running the application
+set FLASK_DEBUG=true
+set PORT=5000
+set MODEL_PATH=medicalai/ClinicalGPT-base-zh
 
 echo.
 echo ===================================================
 echo Starting ClinicalGPT Medical Assistant
 echo ===================================================
 echo.
-
-REM Set environment variables
-set FLASK_DEBUG=true
-set PORT=5000
-set MODEL_PATH=medicalai/ClinicalGPT-base-zh
 
 echo Starting server...
 echo.

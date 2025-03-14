@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
 import os
 import json
 import sys
@@ -20,6 +18,13 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Disable Intel Extension auto-loading to prevent errors
+os.environ["TORCH_DEVICE_BACKEND_AUTOLOAD"] = "0"
+
+# Now it's safe to import torch
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Define global variables
 tokenizer = None
@@ -67,18 +72,44 @@ try:
         # Determine optimal device strategy
         # Priority: NPU > GPU > CPU
         has_npu = False
-        has_gpu = torch.cuda.is_available()
-        has_mps = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()  # Check for Apple Silicon
         
-        # Check for NPU (like Intel NPU or custom NPUs)
+        # Check for CUDA GPU
         try:
-            # This is a placeholder for NPU detection
-            # In a real implementation, we would have more specific code
-            # for various NPU vendors (Intel, Habana, etc.)
-            import intel_extension_for_pytorch as ipex
-            has_npu = True
-            logger.info("Intel NPU detected")
+            has_gpu = torch.cuda.is_available()
+            if has_gpu:
+                cuda_device_count = torch.cuda.device_count()
+                cuda_device_name = torch.cuda.get_device_name(0)
+                logger.info(f"CUDA is available. Device count: {cuda_device_count}")
+                logger.info(f"CUDA Device: {cuda_device_name}")
+            else:
+                logger.info("CUDA is not available")
+        except Exception as e:
+            logger.error(f"Error checking CUDA availability: {str(e)}")
+            has_gpu = False
+        
+        # Check for Apple Silicon
+        try:
+            has_mps = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
+            if has_mps:
+                logger.info("Apple Silicon MPS is available")
+        except Exception as e:
+            logger.error(f"Error checking MPS availability: {str(e)}")
+            has_mps = False
+        
+        # Check for Intel NPU safely
+        try:
+            # We'll only try to import if the environment var is explicitly set
+            if os.environ.get("USE_INTEL_NPU", "0").lower() in ["1", "true", "yes"]:
+                import intel_extension_for_pytorch as ipex
+                has_npu = True
+                logger.info("Intel NPU detected and enabled")
+            else:
+                logger.info("Intel NPU detection skipped - set USE_INTEL_NPU=1 to enable")
         except ImportError:
+            logger.info("Intel NPU extensions not available")
+            has_npu = False
+        except Exception as e:
+            logger.error(f"Error checking Intel NPU: {str(e)}")
             has_npu = False
         
         # Set device configurations based on availability
@@ -115,8 +146,9 @@ try:
         
         # Log detailed hardware info
         if has_gpu:
-            logger.info(f"CUDA Device: {torch.cuda.get_device_name(0)}")
-            logger.info(f"CUDA Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
+            props = torch.cuda.get_device_properties(0)
+            logger.info(f"CUDA Memory: {props.total_memory / 1e9:.2f} GB")
+            logger.info(f"CUDA Compute Capability: {props.major}.{props.minor}")
             
         # Disable HF warning about symlinks
         os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
@@ -126,11 +158,14 @@ try:
         logger.info("Tokenizer loaded successfully")
         
         # Load model with optimized settings
+        model_dtype = torch.float16 if has_gpu else torch.float32
+        logger.info(f"Using model precision: {model_dtype}")
+        
         model = AutoModelForCausalLM.from_pretrained(
             MODEL_PATH, 
             trust_remote_code=True,
             low_cpu_mem_usage=True,
-            torch_dtype=torch.float16 if has_gpu or has_npu else torch.float32
+            torch_dtype=model_dtype
         )
         logger.info("Model loaded successfully")
         
