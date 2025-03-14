@@ -11,3 +11,5 @@ python-dotenv
 flask-cors
 pytest
 validators
+pillow
+accelerate

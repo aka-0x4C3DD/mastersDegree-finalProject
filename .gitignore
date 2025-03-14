@@ -44,7 +44,7 @@ processed_data/
 # Logs
 logs/
 *.log
-log.txt
+*log.txt
 
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
@@ -84,3 +84,6 @@ htmlcov/
 .cache
 coverage.xml
 *.cover
+
+# Local files
+0.26.0
