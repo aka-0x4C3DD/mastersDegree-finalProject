@@ -4,6 +4,53 @@
 
 <i>A sophisticated medical assistant application that combines large language models with trusted medical sources to provide accurate medical information and analysis.</i>
 
+[![Python Version](https://img.shields.io/badge/python-3.12+-brightgreen.svg)](#prerequisites)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](#prerequisites)
+[![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](LICENSE)
+[![Issues](https://img.shields.io/github/issues/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../issues)
+[![Last Commit](https://img.shields.io/github/last-commit/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../commits)
+[![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#-key-components)
+[![Coverage](https://img.shields.io/badge/coverage-85%25-green.svg)](#-key-components)
+[![Documentation](https://img.shields.io/badge/docs-up%20to%20date-brightgreen.svg)](#-api-reference)
+[![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
+[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-models%20on%20hub-yellow)](#-acknowledgments)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
+
+</div>
+
+## 📑 Table of Contents
+
+- [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
+  - [📑 Table of Contents](#-table-of-contents)
+- [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant-1)
+  - [🌟 Features](#-features)
+  - [🛠️ System Architecture](#️-system-architecture)
+  - [🚀 Quick Start](#-quick-start)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Using the Application](#using-the-application)
+  - [🔧 Configuration](#-configuration)
+    - [Environment Variables](#environment-variables)
+    - [Trusted Domains](#trusted-domains)
+  - [🎯 Key Components](#-key-components)
+    - [Server (`server/`)](#server-server)
+    - [Utils (`utils/`)](#utils-utils)
+  - [📝 API Reference](#-api-reference)
+    - [Endpoints](#endpoints)
+    - [Sample Request](#sample-request)
+  - [🔐 Security](#-security)
+  - [🤝 Contributing](#-contributing)
+  - [📜 License](#-license)
+  - [🙏 Acknowledgments](#-acknowledgments)
+
+<div align="center">
+  
+# ClinicalGPT Medical Assistant
+
+<i>A sophisticated medical assistant application that combines large language models with trusted medical sources to provide accurate medical information and analysis.</i>
+
 ![Python Version](https://img.shields.io/badge/python-3.12+-brightgreen.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
 ![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)
