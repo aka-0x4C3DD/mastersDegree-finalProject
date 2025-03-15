@@ -15,7 +15,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
 # Delayed import after adding project root to path
-from utils.web_scraper import WebScraper
+from utils.web_scraper import web_scraper
 
 
 # Configure logging to file and console
@@ -46,10 +46,7 @@ device_config = {
     'secondary_weight': 0.15  # 15% of workload on secondary device
 }
 
-
-web_scraper = WebScraper()
-
-
+# Load configuration file
 try:
     logger.info("Starting ClinicalGPT Medical Assistant server...")
     
