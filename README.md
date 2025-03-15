@@ -1,12 +1,23 @@
+<div align="center">
+  
 # ClinicalGPT Medical Assistant
 
-A sophisticated medical assistant application that combines large language models with trusted medical sources to provide accurate medical information and analysis.
+<i>A sophisticated medical assistant application that combines large language models with trusted medical sources to provide accurate medical information and analysis.</i>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python Version](https://img.shields.io/badge/python-3.8+-brightgreen.svg)
+![Python Version](https://img.shields.io/badge/python-3.12+-brightgreen.svg)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)
+![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)
+![Issues](https://img.shields.io/github/issues/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)
+![Last Commit](https://img.shields.io/github/last-commit/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)
+[![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
+<img src="https://img.shields.io/badge/python-3.10-blue.svg">
 
+</div>
+
+<div align="center">
+  
 ## 🌟 Features
+</div>
 
 - **Intelligent Medical Queries**: Get accurate responses to medical questions using state-of-the-art language models
 - **Web Search Integration**: Automatic search and validation from trusted medical sources
@@ -24,7 +35,10 @@ A sophisticated medical assistant application that combines large language model
   - Intel NPUs
   - CPU fallback
 
+<div align="center">
+  
 ## 🛠️ System Architecture
+</div>
 
 ```mermaid
 graph TB
@@ -56,7 +70,10 @@ graph TB
     Application Layer --> External Services
 ```
 
+<div align="center">
+  
 ## 🚀 Quick Start
+</div>
 
 ### Prerequisites
 
@@ -88,7 +105,10 @@ The script will:
 
 Access the web interface at http://localhost:5000 in your browser. The interface will open automatically when using run.bat.
 
+<div align="center">
+  
 ## 🔧 Configuration
+</div>
 
 ### Environment Variables
 
@@ -101,7 +121,10 @@ Access the web interface at http://localhost:5000 in your browser. The interface
 
 Edit `config.ini` to modify the list of trusted medical sources.
 
+<div align="center">
+  
 ## 🎯 Key Components
+</div>
 
 ### Server (`server/`)
 - Flask-based REST API
@@ -115,7 +138,10 @@ Edit `config.ini` to modify the list of trusted medical sources.
 - Medical term detection
 - Text analysis tools
 
+<div align="center">
+  
 ## 📝 API Reference
+</div>
 
 ### Endpoints
 
@@ -135,14 +161,20 @@ POST /api/query
 }
 ```
 
+<div align="center">
+  
 ## 🔐 Security
+</div>
 
 - Content validation and sanitization
 - Trusted domain verification
 - Input length restrictions
 - Error handling and logging
 
+<div align="center">
+  
 ## 🤝 Contributing
+</div>
 
 1. Fork the repository
 2. Create a feature branch
@@ -150,17 +182,23 @@ POST /api/query
 4. Push to the branch
 5. Submit a pull request
 
+<div align="center">
+  
 ## 📜 License
+</div>
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the CCv1 License - see the [LICENSE](LICENSE) file for details.
 
+<div align="center">
+  
 ## 🙏 Acknowledgments
+</div>
 
 - Hugging Face for model hosting
 - Trusted medical sources (NIH, CDC, Mayo Clinic, etc.)
 - Open-source medical research community
 
-## 📞 Support
+<!-- ## 📞 Support
 
 For support and questions:
 - Create an issue in the repository
@@ -172,4 +210,8 @@ For support and questions:
 - Regular model updates
 - Security patches
 - Feature additions
-- Bug fixes
+- Bug fixes -->
+
+<div align="center">
+    made with ❤️ by SUMAN & GEET
+</div>
