@@ -253,12 +253,37 @@ try:
             
             # Process the query with ClinicalGPT
             try:
-                # Format the prompt properly for the model
-                prompt = f"User: {query}\nAssistant:"
-                logger.debug(f"Using prompt: {prompt}")
+                # First check if we should search the web for information
+                web_results = []
+                if data.get('search_web', False):
+                    logger.info("Searching web for medical information first...")
+                    search_term = data.get('search_term', query)
+                    web_results = search_medical_sites(search_term, max_results=5)
+                    logger.info(f"Found {len(web_results)} web results")
+                    
+                    # Create an enhanced prompt that includes web information
+                    if web_results:
+                        web_context = "\n\nInformation from trusted medical sources:\n"
+                        for i, result in enumerate(web_results):
+                            title = result.get('title', 'Medical Information')
+                            content = result.get('content', '').strip()
+                            source = result.get('source', 'trusted medical source')
+                            
+                            web_context += f"[Source {i+1}: {title} from {source}]\n{content}\n\n"
+                        
+                        # Create an enhanced prompt that instructs the model to use this information
+                        prompt = f"User: {query}\n\nPlease use the following up-to-date information in your response:\n{web_context}\nAssistant:"
+                    else:
+                        # If no web results, use standard prompt
+                        prompt = f"User: {query}\nAssistant:"
+                else:
+                    # Standard prompt without web search
+                    prompt = f"User: {query}\nAssistant:"
+                
+                logger.debug(f"Using prompt with length: {len(prompt)}")
                 
                 # Tokenize and prepare input
-                inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=512)
+                inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=1024)
                 
                 # Move inputs to main device
                 main_device = torch.device(device_config['main_device'])
