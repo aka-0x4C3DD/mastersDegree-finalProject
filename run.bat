@@ -55,7 +55,8 @@ if %ERRORLEVEL% == 0 (
 REM Set environment variables for running the application
 set FLASK_DEBUG=true
 set PORT=5000
-set MODEL_PATH=medicalai/ClinicalGPT-base-zh
+set MODEL_PATH=HPAI-BSC/Llama3.1-Aloe-Beta-8B
+set PYTHONPATH=%PROJECT_DIR%  # Added to include project root in Python path
 
 echo.
 echo ===================================================
@@ -74,7 +75,7 @@ REM Try to open the web browser automatically
 start "" http://localhost:5000
 
 REM Launch server and keep it running
-python server\server.py
+python -m server.server
 
 echo.
 echo ===================================================

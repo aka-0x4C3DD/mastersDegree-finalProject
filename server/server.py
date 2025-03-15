@@ -8,6 +8,16 @@ import logging
 import time
 import gc
 
+import configparser
+
+# Add project root to Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
+
+# Delayed import after adding project root to path
+from utils.web_scraper import WebScraper
+
+
 # Configure logging to file and console
 logging.basicConfig(
     level=logging.INFO,
@@ -35,6 +45,10 @@ device_config = {
     'main_weight': 0.85,  # 85% of workload on primary device
     'secondary_weight': 0.15  # 15% of workload on secondary device
 }
+
+
+web_scraper = WebScraper()
+
 
 try:
     logger.info("Starting ClinicalGPT Medical Assistant server...")
