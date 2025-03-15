@@ -7,7 +7,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.12+-brightgreen.svg)](#prerequisites)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](#prerequisites)
 [![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
-[![Transformers](https://img.shields.io/badge/🤗_transformers-latest-yellow.svg)](https://huggingface.co/docs/transformers)
+[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-model%20on%20hub-yellow)](https://huggingface.co/HPAI-BSC/Llama3.1-Aloe-Beta-8B)
 [![BeautifulSoup](https://img.shields.io/badge/beautifulsoup4-4.12+-green.svg)](https://www.crummy.com/software/BeautifulSoup/)
 [![NLTK](https://img.shields.io/badge/nltk-3.8+-brown.svg)](https://www.nltk.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)](https://scikit-learn.org/)
@@ -18,7 +18,8 @@
 [![dotenv](https://img.shields.io/badge/python--dotenv-1.0+-darkgreen.svg)](https://github.com/theskumar/python-dotenv)
 [![Pytest](https://img.shields.io/badge/pytest-7.4+-darkred.svg)](https://docs.pytest.org/)
 [![Validators](https://img.shields.io/badge/validators-0.22+-pink.svg)](https://validators.readthedocs.io/)
-[![Accelerate](https://img.shields.io/badge/🤗_accelerate-latest-yellow.svg)](https://huggingface.co/docs/accelerate)
+<!-- [![Accelerate](https://img.shields.io/badge/🤗_accelerate-latest-yellow.svg)](https://huggingface.co/docs/accelerate) -->
+<!-- [![Transformers](https://img.shields.io/badge/🤗_transformers-latest-yellow.svg)](https://huggingface.co/docs/transformers) -->
 
 [![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../issues)
@@ -26,7 +27,7 @@
 [![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#-key-components)
 [![Documentation](https://img.shields.io/badge/docs-up%20to%20date-brightgreen.svg)](#-api-reference)
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-models%20on%20hub-yellow)](https://huggingface.co/HPAI-BSC/Llama3.1-Aloe-Beta-8B)
+
 <!-- [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing) -->
 
@@ -36,26 +37,28 @@
 
 <!-- ## 📑 Table of Contents -->
 
-- [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
-  - [🌟 Features](#-features)
-  - [🛠️ System Architecture](#️-system-architecture)
-  - [🚀 Quick Start](#-quick-start)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-    - [Using the Application](#using-the-application)
-  - [🔧 Configuration](#-configuration)
-    - [Environment Variables](#environment-variables)
-    - [Trusted Domains](#trusted-domains)
-  - [🎯 Key Components](#-key-components)
-    - [Server (`server/`)](#server-server)
-    - [Utils (`utils/`)](#utils-utils)
-  - [📝 API Reference](#-api-reference)
-    - [Endpoints](#endpoints)
-    - [Sample Request](#sample-request)
-  - [🔐 Security](#-security)
-  - [🤝 Contributing](#-contributing)
-  - [📜 License](#-license)
-  - [🙏 Acknowledgments](#-acknowledgments)
+<br>  <br>
+
+[ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
+  • [🌟 Features](#-features)
+  • [🛠️ System Architecture](#️-system-architecture)
+  • [🚀 Quick Start](#-quick-start)
+    ∘ [Prerequisites](#prerequisites)
+    ∘ [Installation](#installation)
+    ∘ [Using the Application](#using-the-application)
+  • [🔧 Configuration](#-configuration)
+    ∘ [Environment Variables](#environment-variables)
+    ∘ [Trusted Domains](#trusted-domains)
+  • [🎯 Key Components](#-key-components)
+    ∘ [Server (`server/`)](#server-server)
+    ∘ [Utils (`utils/`)](#utils-utils)
+  • [📝 API Reference](#-api-reference)
+    ∘ [Endpoints](#endpoints)
+    ∘ [Sample Request](#sample-request)
+  • [🔐 Security](#-security)
+  • [🤝 Contributing](#-contributing)
+  • [📜 License](#-license)
+  • [🙏 Acknowledgments](#-acknowledgments)
 
 </div>
 
@@ -138,7 +141,7 @@ graph TB
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.12 or higher
 - PyTorch compatible hardware (GPU recommended)
 - Internet connection for web search features
 
@@ -272,7 +275,7 @@ For support and questions:
 - Security patches
 - Feature additions
 - Bug fixes -->
-
+---
 <div align="center">
     made with ❤️ by SUMAN & GEET
 </div>
