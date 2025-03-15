@@ -21,6 +21,9 @@ build/
 # VS Code files
 .vscode/
 
+# Client folder (deprecated Tkinter GUI)
+client/
+
 # Model files and weights (these can be large)
 *.pt
 *.pth
