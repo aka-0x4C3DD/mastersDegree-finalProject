@@ -7,6 +7,8 @@ import traceback
 import logging
 import time
 import gc
+import configparser
+from utils.web_scraper import WebScraper
 
 # Configure logging to file and console
 logging.basicConfig(
@@ -36,18 +38,22 @@ device_config = {
     'secondary_weight': 0.15  # 15% of workload on secondary device
 }
 
+# Initialize web scraper with trusted domains
+config = configparser.ConfigParser()
+config.read('config.ini')
+web_scraper = WebScraper(config['web_scraper'])
+
 try:
     logger.info("Starting ClinicalGPT Medical Assistant server...")
-    
+
     # Add the project root to the Python path to make imports work properly
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
         logger.info(f"Added {project_root} to Python path")
 
-    # Now import from utils
+    # Import utility modules
     try:
-        from utils.web_scraper import search_medical_sites
         from utils.file_processor import process_file
         logger.info("Successfully imported utility modules")
     except ImportError as e:
@@ -65,9 +71,9 @@ except ImportError as e:
     logger.error(f"ERROR importing utility modules: {str(e)}")
     traceback.print_exc()
 
-    # Load environment variables
-    MODEL_PATH = os.environ.get('MODEL_PATH', 'HPAI-BSC/Llama3.1-Aloe-Beta-8B')
-    logger.info(f"Using model: {MODEL_PATH}")
+# Load environment variables
+MODEL_PATH = os.environ.get('MODEL_PATH', 'HPAI-BSC/Llama3.1-Aloe-Beta-8B')
+logger.info(f"Using model: {MODEL_PATH}")
 
 try:
     # Initialize model and tokenizer
@@ -94,13 +100,13 @@ try:
     # Check for Intel NPU
     use_npu = os.environ.get("USE_INTEL_NPU", "1").lower() in ["1", "true", "yes"]
     if use_npu:
-        try:
-            import intel_extension_for_pytorch as ipex
-            has_npu = True
-            logger.info("Intel NPU detected and enabled")
-        except ImportError:
-            logger.warning("Intel NPU extensions not found but USE_INTEL_NPU=1")
-            has_npu = False
+            try:
+                import intel_extension_for_pytorch as ipex  # type: ignore
+                has_npu = True
+                logger.info("Intel NPU detected and enabled")
+            except ImportError:
+                logger.warning("Intel NPU extensions not found. Install with 'pip install intel-extension-for-pytorch' to use.")
+                has_npu = False
 
     # Set device configurations
     if has_npu:
@@ -161,8 +167,67 @@ try:
 except Exception as e:
     logger.error(f"Model initialization failed: {str(e)}", exc_info=True)
 
-@app.route('/')
-def index():
-    return send_from_directory(app.static_folder, 'index.html')
+@app.route('/api/query', methods=['POST'])
+def process_query():
+    """Process a text query using the ClinicalGPT model and return the response."""
+    try:
+        data = request.json
+        if 'query' not in data:
+            logger.warning("API request missing query field")
+            return jsonify({'error': 'No query provided'}), 400
 
-# Remaining routes and code remain unchanged for brevity
+        query = data['query']
+        logger.info(f"Processing query: {query[:50]}...")
+
+        # Check if model is loaded
+        if model is None:
+            logger.error("Model not loaded")
+            return jsonify({'error': 'Model not loaded properly'}), 500
+
+        # Fetch medical info from trusted domains
+        web_results = []
+        if data.get('search_web', False):
+            search_term = data.get('search_term', query)
+            # Use web scraper to search all trusted domains
+            search_results = web_scraper.search_medical_sites(query)
+            for result in search_results[:3]:
+                web_results.append({
+                    "source": result['source'],
+                    "content": result['content']
+                })
+
+        # Generate response using the model
+        inputs = tokenizer(query, return_tensors="pt").to(main_device)
+        with torch.no_grad():
+            outputs = model.generate(
+                inputs["input_ids"],
+                max_length=512,
+                do_sample=True,
+                top_p=0.9,
+                temperature=0.6
+            )
+        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # Extract response part after user prompt
+        response_text = generated_text.split("Assistant:", 1)[-1].strip()
+
+        response = {
+            'model_name': MODEL_PATH,
+            'response': response_text,
+            'web_results': web_results,
+            'device_used': device_config['main_device']
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        logger.error(f"Error processing query: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+# ... [remaining routes and code remain unchanged] ...
+
+if __name__ == '__main__':
+    # Existing server startup code
+    logger.info(f"Starting server on http://localhost:{int(os.environ.get('PORT', 5000))}")
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)
