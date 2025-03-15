@@ -6,25 +6,37 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.12+-brightgreen.svg)](#prerequisites)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](#prerequisites)
+[![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
+[![Transformers](https://img.shields.io/badge/🤗_transformers-latest-yellow.svg)](https://huggingface.co/docs/transformers)
+[![BeautifulSoup](https://img.shields.io/badge/beautifulsoup4-4.12+-green.svg)](https://www.crummy.com/software/BeautifulSoup/)
+[![NLTK](https://img.shields.io/badge/nltk-3.8+-brown.svg)](https://www.nltk.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)](https://scikit-learn.org/)
+[![Flask-CORS](https://img.shields.io/badge/Flask--CORS-4.0+-lightblue.svg)](https://flask-cors.readthedocs.io/)
+[![Pandas](https://img.shields.io/badge/pandas-2.1+-darkblue.svg)](https://pandas.pydata.org/)
+[![Pillow](https://img.shields.io/badge/Pillow-10.0+-purple.svg)](https://python-pillow.org/)
+[![tqdm](https://img.shields.io/badge/tqdm-4.66+-lightgreen.svg)](https://tqdm.github.io/)
+[![dotenv](https://img.shields.io/badge/python--dotenv-1.0+-darkgreen.svg)](https://github.com/theskumar/python-dotenv)
+[![Pytest](https://img.shields.io/badge/pytest-7.4+-darkred.svg)](https://docs.pytest.org/)
+[![Validators](https://img.shields.io/badge/validators-0.22+-pink.svg)](https://validators.readthedocs.io/)
+[![Accelerate](https://img.shields.io/badge/🤗_accelerate-latest-yellow.svg)](https://huggingface.co/docs/accelerate)
+
 [![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../issues)
 [![Last Commit](https://img.shields.io/github/last-commit/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../commits)
 [![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#-key-components)
-[![Coverage](https://img.shields.io/badge/coverage-85%25-green.svg)](#-key-components)
 [![Documentation](https://img.shields.io/badge/docs-up%20to%20date-brightgreen.svg)](#-api-reference)
-[![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
-[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-models%20on%20hub-yellow)](#-acknowledgments)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
+[![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-models%20on%20hub-yellow)](https://huggingface.co/HPAI-BSC/Llama3.1-Aloe-Beta-8B)
+<!-- [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing) -->
 
 </div>
 
-## 📑 Table of Contents
+<div align="center">
+
+<!-- ## 📑 Table of Contents -->
 
 - [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
-  - [📑 Table of Contents](#-table-of-contents)
-- [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant-1)
   - [🌟 Features](#-features)
   - [🛠️ System Architecture](#️-system-architecture)
   - [🚀 Quick Start](#-quick-start)
@@ -45,7 +57,9 @@
   - [📜 License](#-license)
   - [🙏 Acknowledgments](#-acknowledgments)
 
-<div align="center">
+</div>
+
+<!-- <div align="center">
   
 # ClinicalGPT Medical Assistant
 
@@ -59,7 +73,7 @@
 [![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
 <img src="https://img.shields.io/badge/python-3.10-blue.svg">
 
-</div>
+</div> -->
 
 <div align="center">
   
