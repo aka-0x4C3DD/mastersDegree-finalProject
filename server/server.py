@@ -15,7 +15,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_root)
 
 # Delayed import after adding project root to path
-from utils.web_scraper import web_scraper
+from utils.web_scraper import search_medical_sites
 
 
 # Configure logging to file and console
