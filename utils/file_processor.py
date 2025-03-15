@@ -7,9 +7,6 @@ import csv
 import re
 import io
 from PIL import Image
-import cv2
-import pytesseract
-import numpy as np
 from transformers import pipeline
 
 # Configure logging
@@ -145,80 +142,19 @@ def process_json_file(file, model, tokenizer, device):
         }
 
 def process_image_file(file, model, tokenizer, device):
-    """Process an image file with medical content using OCR"""
-    try:
-        # Read and preprocess image
-        img = Image.open(file)
-        open_cv_image = np.array(img)
-        gray_image = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2GRAY)
-        _, binary_image = cv2.threshold(gray_image, 128, 255, cv2.THRESH_BINARY)
-        
-        # Perform OCR
-        extracted_text = pytesseract.image_to_string(binary_image)
-        
-        if not extracted_text.strip():
-            return {
-                "file_type": "image",
-                "response": "No text detected in this image. The image may contain only graphics or the text is not machine-readable."
-            }
-        
-        # Analyze extracted text
-        chunk_result = process_text_chunk(extracted_text, model, tokenizer, device)
-        
-        return {
-            "file_type": "image",
-            "response": chunk_result.get("response", "No analysis available"),
-            "extracted_text": extracted_text
-        }
-    
-    except Exception as e:
-        logger.error(f"Image processing error: {str(e)}")
-        return {
-            "file_type": "image",
-            "error": f"Error processing image: {str(e)}"
-        }
+    """Process an image file with medical content (uses OCR if needed)"""
+    # This is a placeholder - in a real app, you might use OCR or image analysis
+    return {
+        "file_type": "image",
+        "response": "Image analysis is not implemented in this version. In a full implementation, this would use OCR to extract text from the image, or medical image analysis to identify conditions."
+    }
 
 def process_pdf_file(file, model, tokenizer, device):
-    """Process a PDF file with medical content using PyPDF2"""
-    try:
-        import PyPDF2
-    except ImportError:
-        return {
-            "file_type": "pdf",
-            "error": "PyPDF2 not installed. Install with 'pip install PyPDF2' to enable PDF processing."
-        }
-    
-    pdf_reader = PyPDF2.PdfReader(file)
-    text_chunks = []
-    
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
-        text = page.extract_text()
-        if text.strip():  # Skip empty pages
-            text_chunks.append(text)
-    
-    full_text = "\n\n".join(text_chunks)
-    
-    if not full_text.strip():
-        return {
-            "file_type": "pdf",
-            "response": "No text could be extracted from this PDF. It may contain only images or be formatted in a way that prevents text extraction."
-        }
-    
-    # Process the extracted text using existing functions
-    chunks = split_text_into_chunks(full_text)
-    results = []
-    for chunk in chunks:
-        chunk_result = process_text_chunk(chunk, model, tokenizer, device)
-        results.append(chunk_result)
-    
-    summary = summarize_text_results(results, full_text)
-    
+    """Process a PDF file with medical content"""
+    # This is a placeholder - in a real app, you would use a PDF parser
     return {
         "file_type": "pdf",
-        "pages": len(pdf_reader.pages),
-        "extractable_text": len(full_text) > 0,
-        "response": summary
+        "response": "PDF analysis is not implemented in this version. In a full implementation, this would extract text from the PDF and analyze it using the ClinicalGPT model."
     }
 
 def process_text_chunk(text, model, tokenizer, device):
