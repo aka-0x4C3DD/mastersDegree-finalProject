@@ -108,35 +108,105 @@
 
 ```mermaid
 graph TB
-    subgraph Client Layer
-        WUI[Web Interface]
+    %% Client Layer
+    subgraph "Client Layer"
+        WI[Web Interface]
+        APIC[API Clients]
     end
 
-    subgraph Application Layer
-        FS[Flask Server]
-        RC[Request Controller]
-        CM[Context Manager]
+    %% API Layer
+    subgraph "API Layer"
+        API[API Endpoints]
+        HE[Health Endpoints]
+        QE[Query Endpoints]
+        FE[File Processing Endpoints]
+        ME[Medical Term Detection]
     end
 
-    subgraph Model Layer
-        LLM[Language Model]
-        TOK[Tokenizer]
-        MM[Model Management]
-        INF[Inference Engine]
-        DS[Distribution Strategies]
+    %% Core Services
+    subgraph "Core Services"
+        QP[Query Processor]
+        FP[File Processor]
+        WS[Web Search Integration]
     end
 
-    subgraph External Services
-        WS[Web Scraper]
-        MC[Mayo Clinic API]
-        NIH[NIH Database]
-        CDC[CDC Resources]
+    %% Model Layer
+    subgraph "Model Management"
+        ML[Model Loader]
+        IE[Inference Engine]
+        subgraph "Distribution Strategies"
+            MP[Model Parallelism]
+            PP[Pipeline Parallelism]
+            LO[Layer Offloading]
+        end
+    end
+    
+    %% Hardware Layer
+    subgraph "Hardware Acceleration"
+        CUDA[NVIDIA CUDA]
+        ROCM[AMD ROCm]
+        MPS[Apple Silicon]
+        NPU[Intel NPUs]
+        CPU[CPU Fallback]
     end
 
-    Client Layer --> Application Layer
-    Application Layer --> Model Layer
-    Application Layer --> External Services
-    MM --> DS
+    %% External Services
+    subgraph "External Services"
+        subgraph "Medical Data Sources"
+            MAYO[Mayo Clinic]
+            CDC[CDC]
+            NIH[NIH]
+            WEBMD[WebMD]
+            PUBMED[PubMed]
+        end
+        OCR[OCR Services]
+        PDF[PDF Processing]
+    end
+
+    %% Connections - Client to API
+    WI --> API
+    APIC --> API
+    
+    %% API Layer connections
+    API --> HE
+    API --> QE
+    API --> FE
+    API --> ME
+    
+    %% API to Core Services
+    QE --> QP
+    FE --> FP
+    QP --> WS
+    
+    %% Core Services to Model Management
+    QP --> ML
+    QP --> IE
+    FP --> ML
+    FP --> IE
+    
+    %% Model Management internal connections
+    ML --> MP
+    ML --> PP
+    ML --> LO
+    MP --> IE
+    PP --> IE
+    LO --> IE
+    
+    %% Hardware Acceleration
+    IE --> CUDA
+    IE --> ROCM
+    IE --> MPS
+    IE --> NPU
+    IE --> CPU
+    
+    %% External Services connections
+    WS --> MAYO
+    WS --> CDC
+    WS --> NIH
+    WS --> WEBMD
+    WS --> PUBMED
+    FP --> OCR
+    FP --> PDF
 ```
 
 <div align="center">
