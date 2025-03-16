@@ -339,14 +339,7 @@ try:
                 response_text = generated_text.split("Assistant:", 1)[-1].strip()
                 logger.info(f"Generated response: {response_text[:50]}...")
                 
-                # If requested, search for additional context from trusted medical sites
-                web_results = None
-                if data.get('search_web', False):
-                    logger.info("Searching web for additional context...")
-                    search_term = data.get('search_term', query)
-                    web_results = search_medical_sites(search_term)
-                
-                # Build response with updated model name
+                                # Build response with updated model name
                 response = {
                     'model_name': MODEL_PATH,
                     'response': response_text,

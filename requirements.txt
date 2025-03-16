@@ -1,5 +1,8 @@
 torch
 transformers
+spacy 
+scispacy 
+en_core_sci_sm
 flask
 requests
 beautifulsoup4

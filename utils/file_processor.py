@@ -8,6 +8,9 @@ import re
 import io
 from PIL import Image
 from transformers import pipeline
+import spacy
+import numpy as np
+from collections import Counter
 
 # Configure logging
 logging.basicConfig(
@@ -15,6 +18,39 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Global variables for NLP models
+nlp = None
+medical_ner = None
+
+def load_nlp_models():
+    """Load NLP models for medical text processing"""
+    global nlp, medical_ner
+    try:
+        # Try to load ScispaCy model for biomedical text
+        import scispacy
+        nlp = spacy.load("en_core_sci_sm")
+        logger.info("Loaded ScispaCy model for medical NER")
+    except (ImportError, OSError) as e:
+        # Fall back to standard spaCy model if ScispaCy is not available
+        logger.warning(f"ScispaCy model not available: {e}. Using standard spaCy model.")
+        try:
+            nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            logger.warning("Standard spaCy model not found, downloading it...")
+            spacy.cli.download("en_core_web_sm")
+            nlp = spacy.load("en_core_web_sm")
+        
+    # Load a medical NER model from Hugging Face (if available)
+    try:
+        medical_ner = pipeline("ner", model="d4data/biomedical-ner-all", aggregation_strategy="simple")
+        logger.info("Loaded Hugging Face biomedical NER model")
+    except Exception as e:
+        logger.warning(f"Could not load Hugging Face medical NER model: {e}")
+        medical_ner = None
+
+# Load models on module import
+load_nlp_models()
 
 def process_file(file, model, tokenizer, device):
     """Process different types of medical files
@@ -195,41 +231,98 @@ def process_text_chunk(text, model, tokenizer, device):
         logger.error(f"Error processing text chunk: {str(e)}")
         return {"error": f"Error processing text: {str(e)}"}
 
-def generate_response_from_embeddings(text, embeddings):
-    """Generate a response based on the embeddings and input text"""
-    # This is now a legacy function as we're using direct generation
-    # Kept for compatibility with existing code
-    medical_terms = detect_medical_terms(text)
-    
-    if medical_terms:
-        response = f"I detected the following medical terms in your document: {', '.join(medical_terms[:5])}"
-        if len(medical_terms) > 5:
-            response += f" and {len(medical_terms) - 5} more."
-        response += "\n\nIn a full implementation, I would provide detailed analysis of these medical concepts."
-    else:
-        response = "I didn't detect specific medical terms in the document. In a full implementation, I would analyze the content and provide medical insights."
-    
-    return response
-
 def detect_medical_terms(text):
-    """Simple detection of medical terms in text"""
-    # This is a basic implementation - in a real app, you would use a more sophisticated approach
-    common_medical_terms = [
-        'diabetes', 'hypertension', 'cancer', 'cardiovascular', 'asthma', 
-        'arthritis', 'alzheimer', 'parkinson', 'obesity', 'depression',
-        'anxiety', 'schizophrenia', 'bipolar', 'adhd', 'autism',
-        'influenza', 'pneumonia', 'covid', 'vaccination', 'immunization',
-        'medication', 'prescription', 'diagnosis', 'prognosis', 'symptom',
-        'treatment', 'therapy', 'surgery', 'chronic', 'acute'
+    """Advanced detection of medical terms in text using NLP techniques"""
+    if not text:
+        return []
+    
+    # Set of medical terms detected
+    medical_terms = set()
+    
+    # Method 1: Use spaCy for entity detection
+    if nlp:
+        try:
+            doc = nlp(text)
+            
+            # Extract entities that are likely medical terms
+            for ent in doc.ents:
+                if ent.label_ in ["DISEASE", "CHEMICAL", "PROCEDURE", "ANATOMY", "MEDICALCONDITION", 
+                                  "SYMPTOM", "TREATMENT", "DRUG", "MEDICATION", "B-DISO", "I-DISO", 
+                                  "B-PROC", "I-PROC", "B-ANAT", "I-ANAT", "UMLS"]:
+                    medical_terms.add(ent.text.lower())
+            
+            # Look for medical terms in noun chunks (for when entity recognition misses some terms)
+            for chunk in doc.noun_chunks:
+                # Filter by frequency in medical contexts (weight by term length)
+                if chunk.text.lower() in MEDICAL_TERMS_FREQUENCY:
+                    medical_terms.add(chunk.text.lower())
+        except Exception as e:
+            logger.error(f"Error in spaCy processing: {str(e)}")
+    
+    # Method 2: Use Hugging Face transformer model for medical NER
+    if medical_ner:
+        try:
+            # Process text in chunks to avoid context length limitations
+            chunk_size = 512
+            chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+            
+            for chunk in chunks:
+                results = medical_ner(chunk)
+                for result in results:
+                    if result.get('entity_group') in ['DISEASE', 'CHEMICAL', 'TREATMENT', 'DRUG', 'SYMPTOM']:
+                        medical_terms.add(result.get('word').lower())
+        except Exception as e:
+            logger.error(f"Error in Hugging Face NER processing: {str(e)}")
+    
+    # Method 3: Use regex with comprehensive medical terminology
+    for term_category, terms in MEDICAL_TERMINOLOGY.items():
+        for term in terms:
+            if re.search(r'\b' + re.escape(term) + r'\b', text.lower()):
+                medical_terms.add(term)
+    
+    # Convert set back to list and sort alphabetically
+    return sorted(list(medical_terms))
+
+# More comprehensive medical terminology database
+MEDICAL_TERMINOLOGY = {
+    "conditions": [
+        'diabetes', 'hypertension', 'cancer', 'asthma', 'arthritis', 'alzheimer', 
+        'parkinson', 'obesity', 'depression', 'anxiety', 'schizophrenia', 'bipolar', 
+        'adhd', 'autism', 'influenza', 'pneumonia', 'covid', 'insomnia', 'fibromyalgia',
+        'osteoporosis', 'copd', 'anemia', 'leukemia', 'lymphoma', 'melanoma', 'eczema', 
+        'psoriasis', 'lupus', 'epilepsy', 'sclerosis', 'hepatitis', 'cirrhosis', 'gastritis'
+    ],
+    "symptoms": [
+        'pain', 'ache', 'nausea', 'dizziness', 'fatigue', 'fever', 'cough', 'rash',
+        'swelling', 'inflammation', 'bleeding', 'bruising', 'numbness', 'tingling',
+        'stiffness', 'weakness', 'shortness of breath', 'chest pain', 'congestion',
+        'insomnia', 'headache', 'migraine', 'runny nose', 'sore throat', 'wheezing'
+    ],
+    "anatomy": [
+        'heart', 'lung', 'liver', 'kidney', 'brain', 'spine', 'joint', 'artery', 'vein',
+        'muscle', 'bone', 'tendon', 'ligament', 'cartilage', 'thyroid', 'pancreas',
+        'intestine', 'colon', 'stomach', 'esophagus', 'skin', 'nerve', 'blood', 'tissue'
+    ],
+    "procedures": [
+        'surgery', 'transplant', 'biopsy', 'scan', 'mri', 'ct scan', 'x-ray', 'ultrasound', 
+        'therapy', 'vaccination', 'immunization', 'screening', 'dialysis', 'transfusion',
+        'chemotherapy', 'radiation', 'bypass', 'stent', 'implant', 'laparoscopy', 'endoscopy'
+    ],
+    "medications": [
+        'antibiotic', 'antiviral', 'analgesic', 'nsaid', 'steroid', 'insulin', 'statin',
+        'diuretic', 'antihistamine', 'antidepressant', 'antipsychotic', 'sedative',
+        'vaccine', 'opioid', 'bronchodilator', 'anticoagulant', 'antihypertensive'
     ]
-    
-    # Simple regex to find whole words
-    found_terms = []
-    for term in common_medical_terms:
-        if re.search(r'\b' + re.escape(term) + r'\b', text.lower()):
-            found_terms.append(term)
-    
-    return found_terms
+}
+
+# Frequency table of common medical terms (simplified)
+MEDICAL_TERMS_FREQUENCY = {
+    'diabetes': 0.95, 'hypertension': 0.93, 'cancer': 0.9, 'asthma': 0.85,
+    'heart disease': 0.92, 'stroke': 0.88, 'alzheimer': 0.82, 'arthritis': 0.8,
+    'depression': 0.78, 'anxiety': 0.75, 'infection': 0.85, 'inflammation': 0.7,
+    'vaccine': 0.85, 'antibiotic': 0.75, 'surgery': 0.8, 'therapy': 0.7,
+    'diagnosis': 0.9, 'prognosis': 0.85, 'treatment': 0.9, 'symptom': 0.88
+}
 
 def split_text_into_chunks(text, max_chunk_size=500):
     """Split text into manageable chunks for processing"""
