@@ -42,7 +42,10 @@ set TORCH_DEVICE_BACKEND_AUTOLOAD=0
 REM Install dependencies
 echo Installing required packages...
 pip install -r requirements.txt
-pip install pillow accelerate
+
+REM Check for system dependencies
+echo Checking system dependencies for advanced file processing & web scraping...
+python -c "from utils.dependency_checker import check_dependencies; check_dependencies()"
 
 REM Detect CPU vendor and install appropriate extensions
 echo Detecting CPU vendor for optimized PyTorch extensions...
