@@ -436,15 +436,90 @@ function formatAIResponse(data) {
     return html;
 }
 
-// Highlight medical terms in text
+// Enhanced function to highlight medical terms using both basic list and NLP detection
 function highlightMedicalTerms(text) {
     if (!text) return '';
     
-    // Create a regex pattern for all medical terms
+    // First, use the predefined list for immediate highlighting
     const medicalTermPattern = new RegExp('\\b(' + medicalTerms.join('|') + ')\\b', 'gi');
+    let highlightedText = text.replace(medicalTermPattern, '<span class="medical-term">$1</span>');
     
-    // Replace medical terms with highlighted version
-    return text.replace(medicalTermPattern, '<span class="medical-term">$1</span>');
+    // Then, get more comprehensive term detection from the server API
+    fetch('/api/detect-medical-terms', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.medical_terms && data.medical_terms.length > 0) {
+            // Create a temporary div to manipulate the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = highlightedText;
+            
+            // For each detected term not in our basic list, find and highlight
+            for (const term of data.medical_terms) {
+                if (!medicalTerms.includes(term.toLowerCase())) {
+                    const regex = new RegExp('\\b' + term + '\\b', 'gi');
+                    // We need to process text nodes only
+                    highlightTextNodesInElement(tempDiv, regex);
+                }
+            }
+            
+            // Update the highlighted elements with the new version that includes NLP-detected terms
+            const messageElements = document.querySelectorAll('.ai-response');
+            if (messageElements.length > 0) {
+                // Update the latest message with comprehensively highlighted text
+                const latestMessage = messageElements[messageElements.length - 1];
+                latestMessage.innerHTML = tempDiv.innerHTML;
+            }
+        }
+    })
+    .catch(error => console.error('Error detecting medical terms:', error));
+    
+    return highlightedText;
+}
+
+// Helper function to highlight text nodes without affecting already highlighted elements
+function highlightTextNodesInElement(element, regex) {
+    // Recursively process all text nodes
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+        textNodes.push(node);
+    }
+    
+    // Process each text node
+    for (const textNode of textNodes) {
+        // Skip if parent is already a highlight
+        if (textNode.parentNode.classList && textNode.parentNode.classList.contains('medical-term')) {
+            continue;
+        }
+        
+        // Replace text with highlighted version
+        const content = textNode.nodeValue;
+        if (regex.test(content)) {
+            const fragment = document.createDocumentFragment();
+            const parts = content.split(regex);
+            const matches = content.match(regex);
+            
+            // Reconstruct with highlighted spans
+            for (let i = 0; i < parts.length; i++) {
+                fragment.appendChild(document.createTextNode(parts[i]));
+                if (matches && i < matches.length) {
+                    const span = document.createElement('span');
+                    span.className = 'medical-term nlp-detected';
+                    span.appendChild(document.createTextNode(matches[i]));
+                    fragment.appendChild(span);
+                }
+            }
+            
+            textNode.parentNode.replaceChild(fragment, textNode);
+        }
+    }
 }
 
 // Add error message to chat

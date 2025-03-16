@@ -102,10 +102,15 @@ def process_text_file(file, model, tokenizer, device):
         chunk_result = process_text_chunk(chunk, model, tokenizer, device)
         results.append(chunk_result)
     
+    # Detect medical terms using our advanced detection
+    medical_terms = detect_medical_terms(content)
+    
     # Combine results
     combined_result = {
         "file_type": "text",
         "chunks_processed": len(chunks),
+        "medical_terms_detected": medical_terms[:20] if len(medical_terms) > 20 else medical_terms,
+        "medical_term_count": len(medical_terms),
         "response": summarize_text_results(results, content)
     }
     
