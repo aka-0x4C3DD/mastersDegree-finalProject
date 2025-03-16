@@ -180,6 +180,11 @@ function showWelcomeMessage() {
                     </div>
                     <div class="message-body">
                         <p>Hello! I'm ClinicalGPT, your medical assistant. You can ask me questions about medical conditions, symptoms, treatments, or upload medical files for analysis.</p>
+                        
+                        <div class="medical-disclaimer alert alert-warning mt-2">
+                            <p><strong>Medical Disclaimer:</strong> The information provided by ClinicalGPT is for informational and educational purposes only. It is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions regarding a medical condition. Never disregard professional medical advice or delay seeking it because of information provided by this system.</p>
+                        </div>
+                        
                         <div class="sample-queries">
                             <p class="fw-bold mb-2">Try asking me:</p>
                             <div class="sample-query" data-query="What are the symptoms of type 2 diabetes?">

@@ -99,6 +99,7 @@
   - Apple Silicon (MPS)
   - Intel NPUs
   - CPU fallback
+- **Medical Disclaimer**: Transparent communication about AI limitations and the informational nature of responses
 
 <div align="center">
   
@@ -120,7 +121,9 @@ graph TB
     subgraph Model Layer
         LLM[Language Model]
         TOK[Tokenizer]
+        MM[Model Management]
         INF[Inference Engine]
+        DS[Distribution Strategies]
     end
 
     subgraph External Services
@@ -133,6 +136,7 @@ graph TB
     Client Layer --> Application Layer
     Application Layer --> Model Layer
     Application Layer --> External Services
+    MM --> DS
 ```
 
 <div align="center">
@@ -195,14 +199,26 @@ Edit `config.ini` to modify the list of trusted medical sources.
 ### Server (`server/`)
 - Flask-based REST API
 - Model management and inference
+  - Modular design with Strategy pattern for model distribution
+  - Support for model parallelism, pipeline parallelism, and partial offloading
 - File processing and analysis
 - Web search integration
 
 ### Utils (`utils/`)
 - Web scraping functionality
+  - Modular architecture with provider-specific implementations
+  - Trusted domain verification
 - File processing utilities
+  - Support for various document formats
+  - Medical term extraction
 - Medical term detection
 - Text analysis tools
+
+### Code Organization
+- **Modular Architecture**: Components are organized into focused, reusable modules
+- **Strategy Pattern**: Used for model distribution across different hardware setups
+- **Legacy Support**: Backward compatibility layers for evolving interfaces
+- **Clear Separation of Concerns**: Each module handles specific functionality
 
 <div align="center">
   
@@ -236,6 +252,7 @@ POST /api/query
 - Trusted domain verification
 - Input length restrictions
 - Error handling and logging
+- Medical disclaimer and usage limitations clearly stated
 
 <div align="center">
   
