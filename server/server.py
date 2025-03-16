@@ -24,7 +24,7 @@ try:
     # Import server modules
     from server.config import load_config
     from server.utils.device_detection import detect_devices
-    from server.model_manager import ModelManager
+    from server.model_management import ModelManager  # Updated import path
     from server.api import register_routes
     
     # Load configuration
