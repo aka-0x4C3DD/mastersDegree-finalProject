@@ -13,3 +13,6 @@ pytest
 validators
 pillow
 accelerate
+# Hardware-specific extensions will be installed automatically by run.bat
+# - Intel CPUs: intel-extension-for-pytorch
+# - AMD GPUs: ROCm-enabled PyTorch (if available)

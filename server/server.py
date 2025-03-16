@@ -82,7 +82,8 @@ try:
         
         # Determine optimal device strategy
         # Priority: NPU > GPU > CPU
-        has_npu = False
+        has_intel_npu = False
+        has_amd_npu = False
         
         # Check for CUDA GPU
         try:
@@ -112,29 +113,58 @@ try:
             # We'll only try to import if the environment var is explicitly set
             if os.environ.get("USE_INTEL_NPU", "0").lower() in ["1", "true", "yes"]:
                 import intel_extension_for_pytorch as ipex
-                has_npu = True
+                has_intel_npu = True
                 logger.info("Intel NPU detected and enabled")
             else:
                 logger.info("Intel NPU detection skipped - set USE_INTEL_NPU=1 to enable")
         except ImportError:
             logger.info("Intel NPU extensions not available")
-            has_npu = False
+            has_intel_npu = False
         except Exception as e:
             logger.error(f"Error checking Intel NPU: {str(e)}")
-            has_npu = False
+            has_intel_npu = False
+        
+        # Check for AMD NPU (ROCm platform) safely
+        try:
+            # Only try to import if the environment var is explicitly set
+            if os.environ.get("USE_AMD_NPU", "0").lower() in ["1", "true", "yes"]:
+                # Check if PyTorch was built with ROCm support
+                has_hip = hasattr(torch, 'hip') and torch.hip.is_available()
+                if has_hip:
+                    has_amd_npu = True
+                    logger.info("AMD NPU (ROCm) detected and enabled")
+                else:
+                    logger.info("AMD NPU requested but PyTorch ROCm support not available")
+            else:
+                logger.info("AMD NPU detection skipped - set USE_AMD_NPU=1 to enable")
+        except Exception as e:
+            logger.error(f"Error checking AMD NPU: {str(e)}")
+            has_amd_npu = False
         
         # Set device configurations based on availability
-        if has_npu:
+        # Priority: Intel NPU > AMD NPU > CUDA GPU > Apple Silicon > CPU
+        if has_intel_npu:
             if has_gpu:
-                # Use both NPU (primary) and GPU (secondary)
+                # Use both Intel NPU (primary) and GPU (secondary)
                 device_config['main_device'] = 'npu'
                 device_config['secondary_device'] = 'cuda'
-                logger.info(f"Using NPU (85%) and GPU (15%) for inference")
+                logger.info(f"Using Intel NPU (85%) and GPU (15%) for inference")
             else:
-                # Use NPU only
+                # Use Intel NPU only
                 device_config['main_device'] = 'npu'
                 device_config['secondary_device'] = 'cpu'
-                logger.info(f"Using NPU (85%) and CPU (15%) for inference")
+                logger.info(f"Using Intel NPU (85%) and CPU (15%) for inference")
+        elif has_amd_npu:
+            if has_gpu:
+                # Use both AMD NPU (primary) and GPU (secondary)
+                device_config['main_device'] = 'hip'
+                device_config['secondary_device'] = 'cuda'
+                logger.info(f"Using AMD NPU (85%) and GPU (15%) for inference")
+            else:
+                # Use AMD NPU only
+                device_config['main_device'] = 'hip'
+                device_config['secondary_device'] = 'cpu'
+                logger.info(f"Using AMD NPU (85%) and CPU (15%) for inference")
         elif has_gpu:
             # Use GPU (primary) and CPU (secondary)
             device_config['main_device'] = 'cuda'

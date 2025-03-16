@@ -37,7 +37,7 @@
 
 <!-- ## 📑 Table of Contents -->
 
-<br>  <br>
+<br>  
 
 [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
   • [🌟 Features](#-features)
@@ -95,6 +95,7 @@
 - **History Management**: Track and review past queries and analyses
 - **Multi-Device Support**: Intelligent hardware acceleration on:
   - NVIDIA GPUs (CUDA)
+  - AMD GPUs (ROCm)
   - Apple Silicon (MPS)
   - Intel NPUs
   - CPU fallback
@@ -180,6 +181,7 @@ Access the web interface at http://localhost:5000 in your browser. The interface
 - `PORT`: Server port (default: 5000)
 - `MODEL_PATH`: Path to the model (default: HPAI-BSC/Llama3.1-Aloe-Beta-8B)
 - `USE_INTEL_NPU`: Enable Intel NPU acceleration
+- `USE_AMD_NPU`: Enable AMD NPU acceleration
 
 ### Trusted Domains
 
