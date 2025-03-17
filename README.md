@@ -209,6 +209,91 @@ graph TB
     FP --> PDF
 ```
 
+```mermaid 
+sequenceDiagram
+    participant User
+    participant WebUI as Web Interface
+    participant APILayer as API Endpoints
+    participant QueryProc as Query Processor
+    participant FileProc as File Processor
+    participant WebSearch as Web Search Integration
+    participant ModelMgmt as Model Management
+    participant InfEngine as Inference Engine
+    participant DistStrat as Distribution Strategies
+    participant HWAccel as Hardware Acceleration
+    participant ExtSrc as External Medical Sources
+
+    %% User submits a query
+    User->>WebUI: Enters medical query
+    WebUI->>APILayer: POST /api/query
+    APILayer->>QueryProc: Process query request
+    
+    %% Web search if enabled
+    alt Web search enabled
+        QueryProc->>WebSearch: Search for medical information
+        WebSearch->>ExtSrc: Query trusted medical websites
+        ExtSrc-->>WebSearch: Return medical information
+        WebSearch-->>QueryProc: Return search results
+        QueryProc->>QueryProc: Enhance prompt with web results
+    end
+    
+    %% Model processing
+    QueryProc->>ModelMgmt: Request model inference
+    ModelMgmt->>DistStrat: Apply distribution strategy
+    
+    %% Choose appropriate hardware acceleration
+    alt NVIDIA GPU Available
+        DistStrat->>HWAccel: Use CUDA acceleration
+    else AMD GPU Available
+        DistStrat->>HWAccel: Use ROCm acceleration
+    else Apple Silicon
+        DistStrat->>HWAccel: Use MPS acceleration
+    else Intel NPU
+        DistStrat->>HWAccel: Use Intel NPU acceleration
+    else
+        DistStrat->>HWAccel: Use CPU fallback
+    end
+    
+    %% Inference process
+    HWAccel-->>InfEngine: Hardware-accelerated processing
+    InfEngine-->>ModelMgmt: Return model response
+    ModelMgmt-->>QueryProc: Return formatted response
+    
+    %% Combine results
+    QueryProc-->>APILayer: Return combined results
+    APILayer-->>WebUI: Return JSON response
+    WebUI->>WebUI: Format response with Markdown
+    WebUI->>WebUI: Apply medical term highlighting
+    WebUI-->>User: Display formatted response
+
+    %% Alternative flow for file upload
+    rect rgb(240, 240, 255)
+        Note over User,WebUI: File Upload Flow
+        User->>WebUI: Uploads medical file
+        WebUI->>APILayer: POST /api/process-file
+        APILayer->>FileProc: Process uploaded file
+        
+        alt PDF Document
+            FileProc->>FileProc: Extract text and structure
+        else Image File
+            FileProc->>FileProc: Perform OCR
+        else CSV/JSON
+            FileProc->>FileProc: Parse data structure
+        else Text File
+            FileProc->>FileProc: Process plain text
+        end
+        
+        FileProc->>ModelMgmt: Request file analysis
+        ModelMgmt->>InfEngine: Generate analysis
+        InfEngine-->>ModelMgmt: Return analysis
+        ModelMgmt-->>FileProc: Return analysis results
+        FileProc-->>APILayer: Return processed results
+        APILayer-->>WebUI: Return JSON response
+        WebUI->>WebUI: Format file analysis results
+        WebUI-->>User: Display file analysis
+    end
+```
+
 <div align="center">
   
 ## 🚀 Quick Start
