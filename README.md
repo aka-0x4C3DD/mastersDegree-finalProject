@@ -267,8 +267,8 @@ sequenceDiagram
     WebUI-->>User: Display formatted response
 
     %% Alternative flow for file upload
-    rect rgb(240, 240, 255)
-        Note over User,WebUI: File Upload Flow
+    rect rgb(71, 73, 73)
+        Note over User,WebUI: File Upload Flow 
         User->>WebUI: Uploads medical file
         WebUI->>APILayer: POST /api/process-file
         APILayer->>FileProc: Process uploaded file
