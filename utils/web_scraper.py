@@ -32,7 +32,9 @@ from utils.web_scraper.providers import (
     search_webmd,
     search_healthline,
     search_medical_news_today,
-    search_pubmed
+    search_pubmed,
+    search_who,
+    search_reuters_health # Import the new Reuters provider
 )
 
 # Get trusted domains for backward compatibility
@@ -54,6 +56,8 @@ __all__ = [
     'search_healthline',
     'search_medical_news_today',
     'search_pubmed',
+    'search_who',
+    'search_reuters_health', # Add Reuters to exports
     'TRUSTED_DOMAINS'
 ]
 

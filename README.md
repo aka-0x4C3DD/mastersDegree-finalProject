@@ -158,6 +158,8 @@ graph TB
             NIH[NIH]
             WEBMD[WebMD]
             PUBMED[PubMed]
+            WHO[World Health Org.]
+            REUTERS[Reuters Health] // Added Reuters
         end
         OCR[OCR Services]
         PDF[PDF Processing]
@@ -205,6 +207,8 @@ graph TB
     WS --> NIH
     WS --> WEBMD
     WS --> PUBMED
+    WS --> WHO
+    WS --> REUTERS // Added Reuters connection
     FP --> OCR
     FP --> PDF
 ```
@@ -304,6 +308,7 @@ sequenceDiagram
 - Python 3.12 or higher
 - PyTorch compatible hardware (GPU recommended)
 - Internet connection for web search features
+- **Microsoft C++ Build Tools**: Required on Windows for compiling certain Python packages with C extensions (e.g., some dependencies for advanced file processing). Download from [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Ensure "C++ build tools" are selected during installation.
 
 ### Installation
 
@@ -433,7 +438,7 @@ This project is licensed under the CCv1 License - see the [LICENSE](LICENSE) fil
 </div>
 
 - Hugging Face for model hosting
-- Trusted medical sources (NIH, CDC, Mayo Clinic, etc.)
+- Trusted medical sources (NIH, CDC, Mayo Clinic, WHO, Reuters, etc.) // Added Reuters
 - Open-source medical research community
 
 <!-- ## 📞 Support
