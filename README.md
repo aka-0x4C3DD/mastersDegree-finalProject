@@ -8,7 +8,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](#prerequisites)
 [![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
 [![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-model%20on%20hub-yellow)](https://huggingface.co/HPAI-BSC/Llama3.1-Aloe-Beta-8B)
-[![Selenium](https://img.shields.io/badge/selenium-4.10+-darkgreen.svg)](https://www.selenium.dev/) <!-- Changed from BeautifulSoup -->
+[![BeautifulSoup](https://img.shields.io/badge/beautifulsoup4-4.12+-green.svg)](https://www.crummy.com/software/BeautifulSoup/)
 [![NLTK](https://img.shields.io/badge/nltk-3.8+-brown.svg)](https://www.nltk.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)](https://scikit-learn.org/)
 [![Flask-CORS](https://img.shields.io/badge/Flask--CORS-4.0+-lightblue.svg)](https://flask-cors.readthedocs.io/)
@@ -234,12 +234,11 @@ sequenceDiagram
     
     %% Web search if enabled
     alt Web search enabled
-        QueryProc->>QueryProc: Extract Keywords from Query %% Added keyword extraction step
-        QueryProc->>WebSearch: Search using keywords %% Modified to use keywords
+        QueryProc->>WebSearch: Search for medical information
         WebSearch->>ExtSrc: Query trusted medical websites
         ExtSrc-->>WebSearch: Return medical information
         WebSearch-->>QueryProc: Return search results
-        QueryProc->>QueryProc: Enhance prompt with web results and original query
+        QueryProc->>QueryProc: Enhance prompt with web results
     end
     
     %% Model processing
@@ -268,8 +267,7 @@ sequenceDiagram
     QueryProc-->>APILayer: Return combined results
     APILayer-->>WebUI: Return JSON response
     WebUI->>WebUI: Format response with Markdown
-    %% Removed the specific highlighting step as it's now optional/potentially removed
-    %% WebUI->>WebUI: Apply medical term highlighting 
+    WebUI->>WebUI: Apply medical term highlighting
     WebUI-->>User: Display formatted response
 
     %% Alternative flow for file upload
@@ -311,7 +309,6 @@ sequenceDiagram
 - PyTorch compatible hardware (GPU recommended)
 - Internet connection for web search features
 - **Microsoft C++ Build Tools**: Required on Windows for compiling certain Python packages with C extensions (e.g., some dependencies for advanced file processing). Download from [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Ensure "C++ build tools" are selected during installation.
-- **WebDriver**: Required for web scraping using Selenium. Download the appropriate WebDriver for your browser (e.g., [ChromeDriver](https://chromedriver.chromium.org/downloads) for Chrome, [GeckoDriver](https://github.com/mozilla/geckodriver/releases) for Firefox) and ensure its executable is in your system's PATH or specify the path during configuration (not yet implemented).
 
 ### Installation
 

@@ -4,10 +4,8 @@ spacy
 scispacy 
 en_core_sci_sm
 flask
-requests # Keep requests for now
-# beautifulsoup4 # Removed
-selenium>=4.10.0 # Added Selenium
-webdriver-manager>=4.0.0 # Added for automatic driver management
+requests
+beautifulsoup4
 nltk
 pandas
 scikit-learn
