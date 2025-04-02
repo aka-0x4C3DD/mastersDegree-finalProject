@@ -459,5 +459,5 @@ For support and questions:
 - Bug fixes -->
 ---
 <div align="center">
-    made with ❤️ by SUMAN & GEET
+<sup>    made with ❤️ by SUMAN 🫱🏼‍🫲🏼 GEET </sup>
 </div>
