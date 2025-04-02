@@ -4,9 +4,15 @@ Common utility functions for web scraping
 import re
 import random
 import logging
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager # Using webdriver-manager
+from selenium.common.exceptions import WebDriverException
+import shutil # Keep for potential future use like checking paths
 
 logger = logging.getLogger(__name__)
 
+# --- Existing functions ---
 def get_common_headers():
     """Get common headers for HTTP requests to avoid being blocked"""
     user_agents = [
@@ -42,3 +48,31 @@ def sanitize_query(query):
     sanitized = re.sub(r'\s+', ' ', sanitized)
     # Trim and encode the query
     return sanitized.strip()
+
+# --- Modified WebDriver Utility ---
+def get_selenium_driver():
+    """Initializes and returns a NEW Selenium WebDriver instance (Chrome)."""
+    logger.info("Initializing new Selenium WebDriver (Chrome)...")
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run headless (no GUI)
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--log-level=3') # Suppress console logs from Chrome/ChromeDriver
+    options.add_experimental_option('excludeSwitches', ['enable-logging']) # Suppress DevTools listening message
+    # Set a common user agent
+    options.add_argument(f'user-agent={get_common_headers()["User-Agent"]}') 
+
+    try:
+        # Use webdriver-manager to automatically handle driver download/update
+        # Suppress webdriver-manager logs which can be verbose
+        logging.getLogger('WDM').setLevel(logging.WARNING) 
+        service = ChromeService(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
+        logger.info("Selenium WebDriver initialized successfully for this thread/task.")
+        return driver
+    except Exception as e:
+        logger.error(f"Failed to initialize Selenium WebDriver: {str(e)}")
+        logger.error("Ensure Chrome is installed and accessible.")
+        logger.error("Consider installing webdriver-manager: pip install webdriver-manager")
+        return None
