@@ -42,7 +42,29 @@ set TORCH_DEVICE_BACKEND_AUTOLOAD=0
 REM Install dependencies
 echo Installing required packages...
 pip install -r requirements.txt
-pip install pillow accelerate
+
+REM Check for system dependencies
+echo Checking system dependencies for advanced file processing and web scraping...
+python -c "from utils.dependency_checker import check_dependencies; check_dependencies()"
+
+REM Detect CPU vendor and install appropriate extensions
+echo Detecting CPU vendor for optimized PyTorch extensions...
+python -c "import platform; cpu_info = platform.processor(); print(f'CPU: {cpu_info}')"
+python -c "import platform; is_intel = 'Intel' in platform.processor(); is_amd = 'AMD' in platform.processor(); print(f'Intel CPU: {is_intel}'); print(f'AMD CPU: {is_amd}'); exit(0 if is_intel else 1 if is_amd else 2)" >nul
+if %ERRORLEVEL% == 0 (
+    echo Intel CPU detected - Installing Intel extension for PyTorch...
+    pip install intel-extension-for-pytorch --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+    set USE_INTEL_NPU=1
+) else if %ERRORLEVEL% == 1 (
+    echo AMD CPU detected - Installing AMD optimizers...
+    pip install --upgrade torch
+    REM Check if AMD ROCm is available for this system
+    python -c "import os; os.environ['PYTORCH_ROCM_ARCH'] = 'gfx900;gfx906;gfx908;gfx90a'; import torch; print(f'PyTorch compiled with ROCm: {torch.backends.cuda.is_built()}')"
+    if %ERRORLEVEL% == 0 (
+        echo AMD ROCm platform appears to be available
+        set USE_AMD_NPU=1
+    )
+)
 
 REM NVIDIA GPU Support - Installing proper CUDA version for PyTorch
 echo Checking for NVIDIA GPU...
@@ -51,6 +73,10 @@ if %ERRORLEVEL% == 0 (
     echo Checking PyTorch CUDA compatibility...
     pip install torch torchvision --extra-index-url https://download.pytorch.org/whl/cu118
 )
+
+REM Check for AMD ROCm support
+echo Checking for AMD GPU...
+python -c "import torch; hasattr_hip = hasattr(torch, 'hip'); hip_available = hasattr(torch, 'hip') and torch.hip.is_available() if hasattr_hip else False; print(f'AMD ROCm Available: {hip_available}')"
 
 REM Set environment variables for running the application
 set FLASK_DEBUG=true

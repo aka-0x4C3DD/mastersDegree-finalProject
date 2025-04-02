@@ -37,7 +37,7 @@
 
 <!-- ## 📑 Table of Contents -->
 
-<br>  <br>
+<br>  
 
 [ClinicalGPT Medical Assistant](#clinicalgpt-medical-assistant)
   • [🌟 Features](#-features)
@@ -95,9 +95,11 @@
 - **History Management**: Track and review past queries and analyses
 - **Multi-Device Support**: Intelligent hardware acceleration on:
   - NVIDIA GPUs (CUDA)
+  - AMD GPUs (ROCm)
   - Apple Silicon (MPS)
   - Intel NPUs
   - CPU fallback
+- **Medical Disclaimer**: Transparent communication about AI limitations and the informational nature of responses
 
 <div align="center">
   
@@ -106,32 +108,194 @@
 
 ```mermaid
 graph TB
-    subgraph Client Layer
-        WUI[Web Interface]
+    %% Client Layer
+    subgraph "Client Layer"
+        WI[Web Interface]
+        APIC[API Clients]
     end
 
-    subgraph Application Layer
-        FS[Flask Server]
-        RC[Request Controller]
-        CM[Context Manager]
+    %% API Layer
+    subgraph "API Layer"
+        API[API Endpoints]
+        HE[Health Endpoints]
+        QE[Query Endpoints]
+        FE[File Processing Endpoints]
+        ME[Medical Term Detection]
     end
 
-    subgraph Model Layer
-        LLM[Language Model]
-        TOK[Tokenizer]
-        INF[Inference Engine]
+    %% Core Services
+    subgraph "Core Services"
+        QP[Query Processor]
+        FP[File Processor]
+        WS[Web Search Integration]
     end
 
-    subgraph External Services
-        WS[Web Scraper]
-        MC[Mayo Clinic API]
-        NIH[NIH Database]
-        CDC[CDC Resources]
+    %% Model Layer
+    subgraph "Model Management"
+        ML[Model Loader]
+        IE[Inference Engine]
+        subgraph "Distribution Strategies"
+            MP[Model Parallelism]
+            PP[Pipeline Parallelism]
+            LO[Layer Offloading]
+        end
+    end
+    
+    %% Hardware Layer
+    subgraph "Hardware Acceleration"
+        CUDA[NVIDIA CUDA]
+        ROCM[AMD ROCm]
+        MPS[Apple Silicon]
+        NPU[Intel NPUs]
+        CPU[CPU Fallback]
     end
 
-    Client Layer --> Application Layer
-    Application Layer --> Model Layer
-    Application Layer --> External Services
+    %% External Services
+    subgraph "External Services"
+        subgraph "Medical Data Sources"
+            MAYO[Mayo Clinic]
+            CDC[CDC]
+            NIH[NIH]
+            WEBMD[WebMD]
+            PUBMED[PubMed]
+            WHO[World Health Org.]
+            REUTERS[Reuters Health] 
+        end
+        OCR[OCR Services]
+        PDF[PDF Processing]
+    end
+
+    %% Connections - Client to API
+    WI --> API
+    APIC --> API
+    
+    %% API Layer connections
+    API --> HE
+    API --> QE
+    API --> FE
+    API --> ME
+    
+    %% API to Core Services
+    QE --> QP
+    FE --> FP
+    QP --> WS
+    
+    %% Core Services to Model Management
+    QP --> ML
+    QP --> IE
+    FP --> ML
+    FP --> IE
+    
+    %% Model Management internal connections
+    ML --> MP
+    ML --> PP
+    ML --> LO
+    MP --> IE
+    PP --> IE
+    LO --> IE
+    
+    %% Hardware Acceleration
+    IE --> CUDA
+    IE --> ROCM
+    IE --> MPS
+    IE --> NPU
+    IE --> CPU
+    
+    %% External Services connections
+    WS --> MAYO
+    WS --> CDC
+    WS --> NIH
+    WS --> WEBMD
+    WS --> PUBMED
+    WS --> WHO
+    WS --> REUTERS 
+    FP --> OCR
+    FP --> PDF
+```
+
+```mermaid 
+sequenceDiagram
+    participant User
+    participant WebUI as Web Interface
+    participant APILayer as API Endpoints
+    participant QueryProc as Query Processor
+    participant FileProc as File Processor
+    participant WebSearch as Web Search Integration
+    participant ModelMgmt as Model Management
+    participant InfEngine as Inference Engine
+    participant DistStrat as Distribution Strategies
+    participant HWAccel as Hardware Acceleration
+    participant ExtSrc as External Medical Sources
+
+    %% User submits a query
+    User->>WebUI: Enters medical query
+    WebUI->>APILayer: POST /api/query
+    APILayer->>QueryProc: Process query request
+    
+    %% Web search if enabled
+    alt Web search enabled
+        QueryProc->>WebSearch: Search for medical information
+        WebSearch->>ExtSrc: Query trusted medical websites
+        ExtSrc-->>WebSearch: Return medical information
+        WebSearch-->>QueryProc: Return search results
+        QueryProc->>QueryProc: Enhance prompt with web results
+    end
+    
+    %% Model processing
+    QueryProc->>ModelMgmt: Request model inference
+    ModelMgmt->>DistStrat: Apply distribution strategy
+    
+    %% Choose appropriate hardware acceleration
+    alt NVIDIA GPU Available
+        DistStrat->>HWAccel: Use CUDA acceleration
+    else AMD GPU Available
+        DistStrat->>HWAccel: Use ROCm acceleration
+    else Apple Silicon
+        DistStrat->>HWAccel: Use MPS acceleration
+    else Intel NPU
+        DistStrat->>HWAccel: Use Intel NPU acceleration
+    else
+        DistStrat->>HWAccel: Use CPU fallback
+    end
+    
+    %% Inference process
+    HWAccel-->>InfEngine: Hardware-accelerated processing
+    InfEngine-->>ModelMgmt: Return model response
+    ModelMgmt-->>QueryProc: Return formatted response
+    
+    %% Combine results
+    QueryProc-->>APILayer: Return combined results
+    APILayer-->>WebUI: Return JSON response
+    WebUI->>WebUI: Format response with Markdown
+    WebUI->>WebUI: Apply medical term highlighting
+    WebUI-->>User: Display formatted response
+
+    %% Alternative flow for file upload
+    rect rgb(71, 73, 73)
+        Note over User,WebUI: File Upload Flow 
+        User->>WebUI: Uploads medical file
+        WebUI->>APILayer: POST /api/process-file
+        APILayer->>FileProc: Process uploaded file
+        
+        alt PDF Document
+            FileProc->>FileProc: Extract text and structure
+        else Image File
+            FileProc->>FileProc: Perform OCR
+        else CSV/JSON
+            FileProc->>FileProc: Parse data structure
+        else Text File
+            FileProc->>FileProc: Process plain text
+        end
+        
+        FileProc->>ModelMgmt: Request file analysis
+        ModelMgmt->>InfEngine: Generate analysis
+        InfEngine-->>ModelMgmt: Return analysis
+        ModelMgmt-->>FileProc: Return analysis results
+        FileProc-->>APILayer: Return processed results
+        APILayer-->>WebUI: Return JSON response
+        WebUI->>WebUI: Format file analysis results
+        WebUI-->>User: Display file analysis
+    end
 ```
 
 <div align="center">
@@ -144,6 +308,7 @@ graph TB
 - Python 3.12 or higher
 - PyTorch compatible hardware (GPU recommended)
 - Internet connection for web search features
+- **Microsoft C++ Build Tools**: Required on Windows for compiling certain Python packages with C extensions (e.g., some dependencies for advanced file processing). Download from [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Ensure "C++ build tools" are selected during installation.
 
 ### Installation
 
@@ -180,6 +345,7 @@ Access the web interface at http://localhost:5000 in your browser. The interface
 - `PORT`: Server port (default: 5000)
 - `MODEL_PATH`: Path to the model (default: HPAI-BSC/Llama3.1-Aloe-Beta-8B)
 - `USE_INTEL_NPU`: Enable Intel NPU acceleration
+- `USE_AMD_NPU`: Enable AMD NPU acceleration
 
 ### Trusted Domains
 
@@ -193,14 +359,26 @@ Edit `config.ini` to modify the list of trusted medical sources.
 ### Server (`server/`)
 - Flask-based REST API
 - Model management and inference
+  - Modular design with Strategy pattern for model distribution
+  - Support for model parallelism, pipeline parallelism, and partial offloading
 - File processing and analysis
 - Web search integration
 
 ### Utils (`utils/`)
 - Web scraping functionality
+  - Modular architecture with provider-specific implementations
+  - Trusted domain verification
 - File processing utilities
+  - Support for various document formats
+  - Medical term extraction
 - Medical term detection
 - Text analysis tools
+
+### Code Organization
+- **Modular Architecture**: Components are organized into focused, reusable modules
+- **Strategy Pattern**: Used for model distribution across different hardware setups
+- **Legacy Support**: Backward compatibility layers for evolving interfaces
+- **Clear Separation of Concerns**: Each module handles specific functionality
 
 <div align="center">
   
@@ -234,6 +412,7 @@ POST /api/query
 - Trusted domain verification
 - Input length restrictions
 - Error handling and logging
+- Medical disclaimer and usage limitations clearly stated
 
 <div align="center">
   
@@ -259,7 +438,7 @@ This project is licensed under the CCv1 License - see the [LICENSE](LICENSE) fil
 </div>
 
 - Hugging Face for model hosting
-- Trusted medical sources (NIH, CDC, Mayo Clinic, etc.)
+- Trusted medical sources (NIH, CDC, Mayo Clinic, WHO, Reuters, etc.) // Added Reuters
 - Open-source medical research community
 
 <!-- ## 📞 Support
