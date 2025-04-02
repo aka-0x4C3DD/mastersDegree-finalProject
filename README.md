@@ -159,7 +159,7 @@ graph TB
             WEBMD[WebMD]
             PUBMED[PubMed]
             WHO[World Health Org.]
-            REUTERS[Reuters Health] // Added Reuters
+            REUTERS[Reuters Health] 
         end
         OCR[OCR Services]
         PDF[PDF Processing]
@@ -208,7 +208,7 @@ graph TB
     WS --> WEBMD
     WS --> PUBMED
     WS --> WHO
-    WS --> REUTERS // Added Reuters connection
+    WS --> REUTERS 
     FP --> OCR
     FP --> PDF
 ```
