@@ -5,12 +5,13 @@ import logging
 from flask import Blueprint, request, jsonify
 from server.model_management import ModelManager
 from utils.web_scraper import search_medical_sites # Use the refactored web scraper entry point
-from utils.file_processor.medical_terms import extract_search_keywords # Import the new function
+# Import the LLM-based keyword extraction function
+from utils.file_processor.medical_terms import extract_search_keywords
 
 logger = logging.getLogger(__name__)
 query_bp = Blueprint('query', __name__)
 
-# Modify the function signature to accept device_config
+# Keep model_manager in the signature
 def register_query_routes(app, model_manager: ModelManager, device_config):
     """Registers query-related API routes."""
 
@@ -31,11 +32,12 @@ def register_query_routes(app, model_manager: ModelManager, device_config):
         
         if search_web:
             try:
-                # --- Keyword Extraction Step ---
-                search_keywords = extract_search_keywords(user_query)
+                # --- Keyword Extraction Step using LLM ---
+                # Pass model_manager to the keyword extraction function
+                search_keywords = extract_search_keywords(user_query, model_manager)
                 if not search_keywords:
-                    logger.warning("No keywords extracted, falling back to original query for web search.")
-                    search_term = user_query 
+                    logger.warning("No keywords extracted via LLM, falling back to original query for web search.")
+                    search_term = user_query
                 else:
                     search_term = search_keywords
                 # --- End Keyword Extraction ---

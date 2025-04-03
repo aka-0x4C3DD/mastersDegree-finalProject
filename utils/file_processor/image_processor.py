@@ -20,7 +20,7 @@ from .text_processor import process_text_chunk
 
 logger = logging.getLogger(__name__)
 
-def process_image_file(file, model, tokenizer, device):
+def process_image_file(file, model_manager):
     """Process an image file with medical content using OCR"""
     try:
         # Save the uploaded file temporarily
@@ -69,8 +69,8 @@ OCR Extracted Text:
 {extracted_text}
 """
         
-        # Process the summary with the model
-        result = process_text_chunk(summary, model, tokenizer, device)
+        # Process the summary with the model, passing model_manager
+        result = process_text_chunk(summary, model_manager)
         
         # Return the results
         return {

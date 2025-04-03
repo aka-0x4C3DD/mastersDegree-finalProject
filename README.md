@@ -8,8 +8,8 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](#prerequisites)
 [![Flask](https://img.shields.io/badge/flask-3.0+-blue.svg)](#prerequisites)
 [![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-model%20on%20hub-yellow)](https://huggingface.co/HPAI-BSC/Llama3.1-Aloe-Beta-8B)
-[![Selenium](https://img.shields.io/badge/selenium-4.10+-darkgreen.svg)](https://www.selenium.dev/) <!-- Changed from BeautifulSoup -->
-[![NLTK](https://img.shields.io/badge/nltk-3.8+-brown.svg)](https://www.nltk.org/)
+[![Selenium](https://img.shields.io/badge/selenium-4.10+-darkgreen.svg)](https://www.selenium.dev/)
+[![NLTK](https://img.shields.io/badge/nltk-3.8+-brown.svg)](https://www.nltk.org/) <!-- Keep NLTK if still used elsewhere -->
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange.svg)](https://scikit-learn.org/)
 [![Flask-CORS](https://img.shields.io/badge/Flask--CORS-4.0+-lightblue.svg)](https://flask-cors.readthedocs.io/)
 [![Pandas](https://img.shields.io/badge/pandas-2.1+-darkblue.svg)](https://pandas.pydata.org/)
@@ -18,8 +18,7 @@
 [![dotenv](https://img.shields.io/badge/python--dotenv-1.0+-darkgreen.svg)](https://github.com/theskumar/python-dotenv)
 [![Pytest](https://img.shields.io/badge/pytest-7.4+-darkred.svg)](https://docs.pytest.org/)
 [![Validators](https://img.shields.io/badge/validators-0.22+-pink.svg)](https://validators.readthedocs.io/)
-<!-- [![Accelerate](https://img.shields.io/badge/🤗_accelerate-latest-yellow.svg)](https://huggingface.co/docs/accelerate) -->
-<!-- [![Transformers](https://img.shields.io/badge/🤗_transformers-latest-yellow.svg)](https://huggingface.co/docs/transformers) -->
+<!-- Removed spaCy/scispaCy badges -->
 
 [![License](https://img.shields.io/github/license/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/aka-0x4C3DD/mastersDegree-finalProject?style=flat-square)](../../issues)
@@ -27,9 +26,6 @@
 [![Code Size](https://img.shields.io/github/languages/code-size/aka-0x4C3DD/mastersDegree-finalProject.svg)]()
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#-key-components)
 [![Documentation](https://img.shields.io/badge/docs-up%20to%20date-brightgreen.svg)](#-api-reference)
-
-<!-- [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing) -->
 
 </div>
 
@@ -120,7 +116,7 @@ graph TB
         HE[Health Endpoints]
         QE[Query Endpoints]
         FE[File Processing Endpoints]
-        ME[Medical Term Detection]
+        ME[Medical Term Detection (LLM)] %% Updated
     end
 
     %% Core Services
@@ -133,7 +129,7 @@ graph TB
     %% Model Layer
     subgraph "Model Management"
         ML[Model Loader]
-        IE[Inference Engine]
+        IE[Inference Engine (LLM)] %% Updated
         subgraph "Distribution Strategies"
             MP[Model Parallelism]
             PP[Pipeline Parallelism]
@@ -179,6 +175,7 @@ graph TB
     QE --> QP
     FE --> FP
     QP --> WS
+    ME --> QP %% Term detection might feed back into query processing or analysis
     
     %% Core Services to Model Management
     QP --> ML
@@ -222,7 +219,7 @@ sequenceDiagram
     participant FileProc as File Processor
     participant WebSearch as Web Search Integration
     participant ModelMgmt as Model Management
-    participant InfEngine as Inference Engine
+    participant InfEngine as Inference Engine (LLM) %% Updated
     participant DistStrat as Distribution Strategies
     participant HWAccel as Hardware Acceleration
     participant ExtSrc as External Medical Sources
@@ -234,8 +231,9 @@ sequenceDiagram
     
     %% Web search if enabled
     alt Web search enabled
-        QueryProc->>QueryProc: Extract Keywords from Query %% Added keyword extraction step
-        QueryProc->>WebSearch: Search using keywords %% Modified to use keywords
+        QueryProc->>ModelMgmt: Extract Keywords using LLM %% Updated
+        ModelMgmt-->>QueryProc: Return keywords
+        QueryProc->>WebSearch: Search using keywords
         WebSearch->>ExtSrc: Query trusted medical websites
         ExtSrc-->>WebSearch: Return medical information
         WebSearch-->>QueryProc: Return search results
@@ -243,7 +241,7 @@ sequenceDiagram
     end
     
     %% Model processing
-    QueryProc->>ModelMgmt: Request model inference
+    QueryProc->>ModelMgmt: Request model inference for main response
     ModelMgmt->>DistStrat: Apply distribution strategy
     
     %% Choose appropriate hardware acceleration
@@ -268,8 +266,6 @@ sequenceDiagram
     QueryProc-->>APILayer: Return combined results
     APILayer-->>WebUI: Return JSON response
     WebUI->>WebUI: Format response with Markdown
-    %% Removed the specific highlighting step as it's now optional/potentially removed
-    %% WebUI->>WebUI: Apply medical term highlighting 
     WebUI-->>User: Display formatted response
 
     %% Alternative flow for file upload
@@ -289,9 +285,9 @@ sequenceDiagram
             FileProc->>FileProc: Process plain text
         end
         
-        FileProc->>ModelMgmt: Request file analysis
-        ModelMgmt->>InfEngine: Generate analysis
-        InfEngine-->>ModelMgmt: Return analysis
+        FileProc->>ModelMgmt: Request file analysis & term extraction (LLM) %% Updated
+        ModelMgmt->>InfEngine: Generate analysis & terms
+        InfEngine-->>ModelMgmt: Return analysis & terms
         ModelMgmt-->>FileProc: Return analysis results
         FileProc-->>APILayer: Return processed results
         APILayer-->>WebUI: Return JSON response
@@ -373,9 +369,8 @@ Edit `config.ini` to modify the list of trusted medical sources.
   - Trusted domain verification
 - File processing utilities
   - Support for various document formats
-  - Medical term extraction
-- Medical term detection
-- Text analysis tools
+  - Medical term extraction (using primary LLM) %% Updated
+- Text analysis tools (using primary LLM) %% Updated
 
 ### Code Organization
 - **Modular Architecture**: Components are organized into focused, reusable modules

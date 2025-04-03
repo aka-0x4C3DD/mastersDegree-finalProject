@@ -1,7 +1,7 @@
 torch
 transformers
-spacy 
-scispacy 
+# spacy  # Removed
+# scispacy # Removed
 beautifulsoup4
 flask
 requests # Keep requests for now

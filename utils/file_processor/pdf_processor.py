@@ -28,7 +28,7 @@ from .text_processor import process_text_chunk
 
 logger = logging.getLogger(__name__)
 
-def process_pdf_file(file, model, tokenizer, device):
+def process_pdf_file(file, model_manager):
     """Process a PDF file with medical content"""
     try:
         # Save the uploaded file temporarily
@@ -66,8 +66,8 @@ def process_pdf_file(file, model, tokenizer, device):
         
         summary += f"\nExtracted text from PDF:\n\n{text_preview}"
         
-        # Process the extracted text with the model
-        result = process_text_chunk(summary, model, tokenizer, device)
+        # Process the extracted text with the model, passing model_manager
+        result = process_text_chunk(summary, model_manager)
         
         # Return the results
         return {

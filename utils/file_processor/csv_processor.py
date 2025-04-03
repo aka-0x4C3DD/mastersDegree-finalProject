@@ -10,7 +10,7 @@ from .text_processor import process_text_chunk
 
 logger = logging.getLogger(__name__)
 
-def process_csv_file(file, model, tokenizer, device):
+def process_csv_file(file, model_manager):
     """Process a CSV file with medical data"""
     content = file.read().decode('utf-8')
     
@@ -31,8 +31,8 @@ def process_csv_file(file, model, tokenizer, device):
         text_to_analyze = summary + "\n".join([", ".join(row) for row in rows[:5]])
         text_to_analyze += "\n...\n" + "\n".join([", ".join(row) for row in rows[-3:]])
     
-    # Process the extracted text
-    result = process_text_chunk(text_to_analyze, model, tokenizer, device)
+    # Process the extracted text, passing model_manager
+    result = process_text_chunk(text_to_analyze, model_manager)
     
     return {
         "file_type": "csv",

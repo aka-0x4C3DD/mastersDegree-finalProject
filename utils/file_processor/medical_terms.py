@@ -1,85 +1,81 @@
-import spacy
 import logging
-from spacy.matcher import Matcher
 
 logger = logging.getLogger(__name__)
 
-# Load the spaCy model (consider using a more general model if needed)
-# Using scispaCy model for potential medical context, but logic aims broader
-try:
-    # nlp = spacy.load("en_core_web_sm") # Option for a general model
-    nlp = spacy.load("en_core_sci_sm") 
-    logger.info("Loaded spaCy model 'en_core_sci_sm' for term detection.")
-except OSError:
-    logger.error("spaCy model 'en_core_sci_sm' not found. Please run 'python -m spacy download en_core_sci_sm'")
-    nlp = None
-except ImportError:
-     logger.error("spaCy or scispaCy not installed. Please install them.")
-     nlp = None
-
-def detect_medical_terms(text):
-    """Detects medical terms using scispaCy NER."""
-    if not nlp:
-        logger.warning("spaCy model not loaded. Cannot detect medical terms.")
+# Modified function to use LLM
+def detect_medical_terms(text: str, model_manager) -> list[str]:
+    """Detects medical terms using the primary LLM."""
+    if not model_manager or not text:
+        logger.warning("Model manager not available or text is empty. Cannot detect medical terms.")
         return []
-    if not text:
+
+    prompt = f"""Analyze the following text and extract all significant medical terms, including diseases, symptoms, medications, procedures, and anatomical references. List only the unique terms, separated by commas. Do not include explanations or introductory phrases.
+
+Text:
+"{text}"
+
+Medical Terms:"""
+
+    try:
+        # Use the model_manager to generate the response
+        response = model_manager.generate_response(prompt) # Use the generate_response method
+
+        if not response:
+            logger.warning("Received empty response from LLM for medical term extraction.")
+            return []
+
+        # Parse the comma-separated response from the LLM
+        terms_string = response.strip()
+        terms = [term.strip().lower() for term in terms_string.split(',') if term.strip()]
+        unique_terms = sorted(list(set(terms))) # Ensure uniqueness and sort
+        logger.debug(f"Detected {len(unique_terms)} medical terms via LLM.")
+        # Return a list of strings, as the original structured output is hard to replicate
+        return unique_terms
+
+    except Exception as e:
+        logger.error(f"Error during medical term detection with LLM: {e}", exc_info=True)
         return []
-        
-    doc = nlp(text)
-    terms = []
-    for ent in doc.ents:
-        terms.append({
-            "text": ent.text,
-            "label": ent.label_,
-            "start": ent.start_char,
-            "end": ent.end_char
-        })
-    logger.debug(f"Detected {len(terms)} medical entities.")
-    return terms
 
-def extract_search_keywords(text, max_keywords=10):
+
+# Modified function to use LLM
+def extract_search_keywords(text: str, model_manager, max_keywords=10) -> str:
     """
-    Extracts relevant keywords (nouns, proper nouns, entities) from text 
-    for use in web searches.
+    Extracts relevant keywords from text using the primary LLM
+    for use in web searches. Returns a space-separated string.
     """
-    if not nlp:
-        logger.warning("spaCy model not loaded. Cannot extract keywords.")
-        return ""
-    if not text:
+    if not model_manager or not text:
+        logger.warning("Model manager not available or text is empty. Cannot extract keywords.")
         return ""
 
-    doc = nlp(text)
-    keywords = set()
+    prompt = f"""Analyze the following text and extract the most important keywords or key phrases suitable for a web search about the main medical topics discussed. List the top {max_keywords} keywords/phrases, separated by spaces. Focus on nouns, proper nouns, medical conditions, treatments, and symptoms.
 
-    # 1. Add Named Entities (prioritize these)
-    for ent in doc.ents:
-        # Clean up entity text slightly (optional)
-        keywords.add(ent.text.strip())
+Text:
+"{text}"
 
-    # 2. Add important Nouns and Proper Nouns not already covered by entities
-    allowed_pos = {"NOUN", "PROPN"}
-    for token in doc:
-        if not token.is_stop and not token.is_punct and token.pos_ in allowed_pos:
-            # Check if the token is part of an already added entity
-            part_of_entity = any(ent.start <= token.i < ent.end for ent in doc.ents)
-            if not part_of_entity:
-                keywords.add(token.lemma_.lower()) # Use lemma for nouns
+Keywords:"""
 
-    # 3. Consider Noun Chunks (phrases like "type 2 diabetes")
-    for chunk in doc.noun_chunks:
-         # Check if the chunk significantly overlaps with an existing entity
-         chunk_in_entity = any(ent.start_char <= chunk.start_char and ent.end_char >= chunk.end_char for ent in doc.ents)
-         if not chunk_in_entity:
-              keywords.add(chunk.text.strip())
+    try:
+        # Use the model_manager to generate the response
+        response = model_manager.generate_response(prompt) # Use the generate_response method
+
+        if not response:
+            logger.warning("Received empty response from LLM for keyword extraction.")
+            return ""
+
+        # The response should already be space-separated keywords
+        keyword_string = response.strip()
+        # Optional: Limit the number of words just in case
+        keyword_list = keyword_string.split()
+        final_keywords = keyword_list[:max_keywords]
+        keyword_string = " ".join(final_keywords)
+
+        logger.info(f"Extracted keywords via LLM for search: '{keyword_string}' from text: '{text[:50]}...'")
+        return keyword_string
+
+    except Exception as e:
+        logger.error(f"Error during keyword extraction with LLM: {e}", exc_info=True)
+        return ""
 
 
-    # Limit the number of keywords and join them
-    keyword_list = sorted(list(keywords), key=len, reverse=True) # Prioritize longer phrases
-    final_keywords = keyword_list[:max_keywords]
-    
-    keyword_string = " ".join(final_keywords)
-    logger.info(f"Extracted keywords for search: '{keyword_string}' from text: '{text[:50]}...'")
-    return keyword_string
-
-# Make the new function available
+# Update __all__ to reflect the modified functions (if names changed, update here)
 __all__ = ['detect_medical_terms', 'extract_search_keywords']

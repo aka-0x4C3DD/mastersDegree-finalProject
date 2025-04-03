@@ -12,8 +12,6 @@ OPTIONAL_DEPENDENCIES = {
     'pytesseract': {'package': 'pytesseract', 'version': '>=0.3.10', 'purpose': 'OCR for image text extraction', 'system': 'Tesseract'},
     'tabula': {'package': 'tabula-py', 'version': '>=2.7.0', 'purpose': 'PDF table extraction', 'system': 'Java'},
     'pdf2image': {'package': 'pdf2image', 'version': '>=1.16.3', 'purpose': 'Convert PDF pages to images', 'system': 'Poppler'},
-    'spacy': {'package': 'spacy', 'version': '>=3.5.0', 'purpose': 'NLP for medical term detection'},
-    'scispacy': {'package': 'scispacy', 'version': '>=0.5.0', 'purpose': 'Medical NLP extension', 'depends': 'spacy', 'model': 'en_core_sci_sm'},
     'selenium': {'package': 'selenium', 'version': '>=4.10.0', 'purpose': 'Advanced web scraping for dynamic content', 'system': 'WebDriver'},
     'webdriver_manager': {'package': 'webdriver-manager', 'version': '>=4.0.0', 'purpose': 'Automatic WebDriver management', 'depends': 'selenium'},
 }
@@ -115,20 +113,6 @@ def check_webdriver():
         logger.error("Ensure Google Chrome is installed. Manual WebDriver setup might be required.")
         return False
 
-def check_spacy_model(model_name):
-    """Check if a spaCy model is installed."""
-    try:
-        import spacy
-        spacy.load(model_name)
-        logger.debug(f"spaCy model '{model_name}' is installed.")
-        return True
-    except OSError:
-        logger.warning(f"spaCy model '{model_name}' not found.")
-        return False
-    except Exception as e:
-        logger.error(f"Error checking spaCy model '{model_name}': {e}")
-        return False
-
 def check_dependencies():
     """Check for all optional Python and system dependencies."""
     logger.info("Checking optional dependencies...")
@@ -139,16 +123,12 @@ def check_dependencies():
     for name, details in OPTIONAL_DEPENDENCIES.items():
         # Check dependency first if specified
         depends_on = details.get('depends')
-        if depends_on and not check_module(depends_on, OPTIONAL_DEPENDENCIES[depends_on]['package']):
-            logger.warning(f"Skipping check for '{name}' because dependency '{depends_on}' is missing.")
-            continue # Skip check if dependency is missing
+        if depends_on and depends_on in OPTIONAL_DEPENDENCIES and not check_module(depends_on, OPTIONAL_DEPENDENCIES[depends_on]['package']):
+             logger.warning(f"Skipping check for '{name}' because dependency '{depends_on}' is missing.")
+             continue # Skip check if dependency is missing
 
         if not check_module(name, details['package'], details.get('version')):
             missing_python.append(details)
-        elif details.get('model') and not check_spacy_model(details['model']):
-             # Special case for spacy models
-             details['install_command'] = f"python -m spacy download {details['model']}"
-             missing_python.append(details)
 
 
     # Check System dependencies linked to Python packages
@@ -187,13 +167,12 @@ def check_dependencies():
                 install_cmd = dep.get('install_command', f"pip install \"{dep['package']}{dep.get('version', '')}\"")
                 print(f"  - {dep['package']}: {dep['purpose']}")
                 print(f"    Install with: {install_cmd}")
-                if dep.get('model'):
-                    print(f"    Note: Also requires spaCy model '{dep['model']}'")
 
         if missing_system:
              print("\nSome system dependencies seem to be missing or not configured:")
              for name, details in missing_system.items():
-                 print(f"  - {name}: Required for {', '.join([p for p, d in OPTIONAL_DEPENDENCIES.items() if d.get('system') == name])}")
+                 required_for = ', '.join([p for p, d in OPTIONAL_DEPENDENCIES.items() if d.get('system') == name])
+                 print(f"  - {name}: Required for {required_for}")
                  print(f"    Install from: {details['install_url']}")
                  if details.get('notes'):
                      print(f"    Note: {details['notes']}")
