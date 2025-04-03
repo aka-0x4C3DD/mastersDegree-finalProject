@@ -2,12 +2,12 @@ torch
 transformers
 spacy 
 scispacy 
-en_core_sci_sm
+
 flask
 requests # Keep requests for now
 # beautifulsoup4 # Removed
-selenium>=4.10.0 # Added Selenium
-webdriver-manager>=4.0.0 # Added for automatic driver management
+selenium # Added Selenium
+webdriver-manager # Added for automatic driver management
 nltk
 pandas
 scikit-learn
@@ -18,10 +18,10 @@ pytest
 validators
 pillow
 accelerate
-PyPDF2>=3.0.0
-pytesseract>=0.3.10
-tabula-py>=2.7.0
-pdf2image>=1.16.3
+PyPDF2
+pytesseract
+tabula-py
+pdf2image
 # Hardware-specific extensions will be installed automatically by run.bat
 # - Intel CPUs: intel-extension-for-pytorch
 # - AMD GPUs: ROCm-enabled PyTorch (if available)

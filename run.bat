@@ -42,6 +42,7 @@ set TORCH_DEVICE_BACKEND_AUTOLOAD=0
 REM Install dependencies
 echo Installing required packages...
 pip install -r requirements.txt
+pip -m spacy download en_core_sci_sm
 
 REM Check for system dependencies
 echo Checking system dependencies for advanced file processing and web scraping...
