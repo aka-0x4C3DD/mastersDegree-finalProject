@@ -38,7 +38,7 @@ Medical Terms:"""
 
 
 # Modified function to use LLM
-def extract_search_keywords(text: str, model_manager, max_keywords=10) -> str:
+def extract_search_keywords(text: str, model_manager, max_keywords=20) -> str:
     """
     Extracts relevant keywords from text using the primary LLM
     for use in web searches. Returns a space-separated string.
@@ -47,10 +47,10 @@ def extract_search_keywords(text: str, model_manager, max_keywords=10) -> str:
         logger.warning("Model manager not available or text is empty. Cannot extract keywords.")
         return ""
 
-    prompt = f"""Analyze the following text and extract the most important keywords or key phrases suitable for a web search about the main medical topics discussed. List the top {max_keywords} keywords/phrases, separated by spaces. Focus on nouns, proper nouns, medical conditions, treatments, and symptoms.
+    # Simpler, more direct prompt
+    prompt = f"""Extract the main and medical keywords from the following text, suitable for a web search. List only the keywords, separated by spaces. Maximum {max_keywords} keywords.
 
-Text:
-"{text}"
+Text: "{text}"
 
 Keywords:"""
 
@@ -60,21 +60,35 @@ Keywords:"""
 
         if not response:
             logger.warning("Received empty response from LLM for keyword extraction.")
-            return ""
+            # Fallback to using the original text if keyword extraction fails
+            logger.info(f"Falling back to using original text for search: '{text[:50]}...'")
+            return text # Return original text as fallback
 
-        # The response should already be space-separated keywords
+        # The response should ideally be space-separated keywords
         keyword_string = response.strip()
+        # Basic cleanup: remove potential instruction remnants if they appear
+        if "keywords:" in keyword_string.lower():
+             keyword_string = keyword_string.split("Keywords:")[-1].strip()
+
         # Optional: Limit the number of words just in case
         keyword_list = keyword_string.split()
-        final_keywords = keyword_list[:max_keywords]
+        # Filter out very short words that are unlikely to be useful keywords
+        final_keywords = [kw for kw in keyword_list if len(kw) > 2][:max_keywords]
         keyword_string = " ".join(final_keywords)
+
+        # If after processing, the keyword string is empty, fallback to original text
+        if not keyword_string:
+             logger.warning("Keyword extraction resulted in empty string, falling back to original text.")
+             return text
 
         logger.info(f"Extracted keywords via LLM for search: '{keyword_string}' from text: '{text[:50]}...'")
         return keyword_string
 
     except Exception as e:
         logger.error(f"Error during keyword extraction with LLM: {e}", exc_info=True)
-        return ""
+        # Fallback to original text on error
+        logger.info(f"Falling back to using original text due to error: '{text[:50]}...'")
+        return text
 
 
 # Update __all__ to reflect the modified functions (if names changed, update here)
