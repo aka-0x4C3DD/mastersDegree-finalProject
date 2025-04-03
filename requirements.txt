@@ -2,10 +2,9 @@ torch
 transformers
 spacy 
 scispacy 
-
+beautifulsoup4
 flask
 requests # Keep requests for now
-# beautifulsoup4 # Removed
 selenium # Added Selenium
 webdriver-manager # Added for automatic driver management
 nltk
