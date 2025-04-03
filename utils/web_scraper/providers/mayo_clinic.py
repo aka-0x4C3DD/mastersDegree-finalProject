@@ -30,25 +30,29 @@ def search_mayo_clinic(query):
         logger.info(f"Navigating to Mayo Clinic search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[@id='main-content']//ol[contains(@class, 'search-results')]"
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # Example: Look for an ordered list with class 'search-results' inside #main-content
+        results_container_selector = "#main-content ol.search-results" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("Mayo Clinic search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}/li[contains(@class, 'result')]"
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # Example: Find list items with class 'result' within the container
+        result_items_selector = f"{results_container_selector} > li.result" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on Mayo Clinic.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//h3/a"
-                snippet_elem_xpath = ".//div[contains(@class, 'result-description')]"
+                # Use relative CSS Selectors (adjust if needed)
+                # Example: Find the first link within an h3 tag
+                title_elem_selector = "h3 > a" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find a div with class 'result-description'
+                snippet_elem_selector = "div.result-description" # Placeholder - VERIFY THIS SELECTOR
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
-                snippet_elem = item.find_element(By.XPATH, snippet_elem_xpath)
+                title_elem = item.find_element(By.CSS_SELECTOR, title_elem_selector)
+                snippet_elem = item.find_element(By.CSS_SELECTOR, snippet_elem_selector)
 
                 title = title_elem.text.strip()
                 link = title_elem.get_attribute('href')
@@ -83,7 +87,7 @@ def search_mayo_clinic(query):
                      logger.warning("Found Mayo Clinic result item but couldn't extract title/content.")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements (title/snippet) within a Mayo Clinic result item.")
+                logger.warning("Could not find expected elements (title/snippet) within a Mayo Clinic result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single Mayo Clinic result via Selenium: {str(e)}", exc_info=True)
 

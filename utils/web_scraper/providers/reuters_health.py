@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 def search_reuters_health(query):
     """Search Reuters Health for medical news using Selenium"""
     settings = get_search_settings()
-    # Reuters search URL for health news
-    search_url = f"https://www.reuters.com/search/news?blob={quote_plus(query)}&sortBy=relevance&dateRange=all&section=healthcare&pn=1"
+    # Updated Reuters search URL structure
+    search_url = f"https://www.reuters.com/site-search/?query={quote_plus(query)}"
     base_url = "https://www.reuters.com"
     results = []
     driver = None # Initialize driver variable
@@ -31,24 +31,28 @@ def search_reuters_health(query):
         logger.info(f"Navigating to Reuters Health search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[contains(@class, 'search-results-container')]"
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # Example: Look for a div with a class containing 'search-results'
+        results_container_selector = "div[class*='search-results']" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("Reuters Health search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//div[contains(@class, 'search-result-indiv')]"
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # Example: Find divs with a class containing 'search-result'
+        result_items_selector = f"{results_container_selector} div[class*='search-result']" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on Reuters Health.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//h3/a"
-                snippet_elem_xpath = ".//p" # Snippet is usually the first paragraph
+                # Use relative CSS Selectors (adjust if needed)
+                # Example: Find the first link within an h3 tag
+                title_elem_selector = "h3 > a" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find the first paragraph for the snippet
+                snippet_elem_selector = "p" # Placeholder - VERIFY THIS SELECTOR (might be too generic)
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
+                title_elem = item.find_element(By.CSS_SELECTOR, title_elem_selector)
                 
                 title = title_elem.text.strip()
                 link = title_elem.get_attribute('href')
@@ -64,7 +68,7 @@ def search_reuters_health(query):
                 
                 # Try to get snippet
                 try:
-                    snippet_elem = item.find_element(By.XPATH, snippet_elem_xpath)
+                    snippet_elem = item.find_element(By.CSS_SELECTOR, snippet_elem_selector)
                     snippet = clean_text(snippet_elem.text)
                 except NoSuchElementException:
                     snippet = title # Fallback if no snippet found
@@ -87,7 +91,7 @@ def search_reuters_health(query):
                      logger.warning("Found Reuters Health result item but couldn't extract title/content.")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements (title) within a Reuters Health result item.")
+                logger.warning("Could not find expected elements (title/snippet) within a Reuters Health result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single Reuters Health result via Selenium: {str(e)}", exc_info=True)
 

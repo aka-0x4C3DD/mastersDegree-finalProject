@@ -30,25 +30,33 @@ def search_pubmed(query):
         logger.info(f"Navigating to PubMed search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[@class='search-results-chunks']"
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # Example: Look for a div with class 'search-results-chunks'
+        results_container_selector = "div.search-results-chunks" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'] + 5) # Slightly longer wait for PubMed
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("PubMed search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//article[contains(@class, 'full-docsum')]"
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # Example: Find articles with class 'full-docsum' within the container
+        result_items_selector = f"{results_container_selector} article.full-docsum" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on PubMed.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//a[contains(@class, 'docsum-title')]"
-                article_id_xpath = ".//span[contains(@class, 'docsum-pmid')]" # Get PMID for link
+                # Use relative CSS Selectors (adjust if needed)
+                # Example: Find link with class 'docsum-title'
+                title_elem_selector = "a.docsum-title" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find span with class 'docsum-pmid'
+                article_id_selector = "span.docsum-pmid" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find span with class 'docsum-authors'
+                authors_selector = "span.docsum-authors" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find span with class 'docsum-journal-citation'
+                journal_selector = "span.docsum-journal-citation" # Placeholder - VERIFY THIS SELECTOR
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
-                pmid_elem = item.find_element(By.XPATH, article_id_xpath)
+                title_elem = item.find_element(By.CSS_SELECTOR, title_elem_selector)
+                pmid_elem = item.find_element(By.CSS_SELECTOR, article_id_selector)
                 
                 title = title_elem.text.strip()
                 article_id = pmid_elem.text.strip()
@@ -60,15 +68,13 @@ def search_pubmed(query):
                     continue
                 
                 # Try to extract authors and journal info if available
-                authors_xpath = ".//span[contains(@class, 'docsum-authors')]"
-                journal_xpath = ".//span[contains(@class, 'docsum-journal-citation')]"
                 snippet = ""
                 try:
-                    authors = item.find_element(By.XPATH, authors_xpath).text.strip()
+                    authors = item.find_element(By.CSS_SELECTOR, authors_selector).text.strip()
                     snippet += authors + ". "
                 except NoSuchElementException: pass
                 try:
-                    journal = item.find_element(By.XPATH, journal_xpath).text.strip()
+                    journal = item.find_element(By.CSS_SELECTOR, journal_selector).text.strip()
                     snippet += journal
                 except NoSuchElementException: pass
                 
@@ -90,7 +96,7 @@ def search_pubmed(query):
                      logger.warning("Found PubMed result item but couldn't extract title/content.")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements (title/pmid) within a PubMed result item.")
+                logger.warning("Could not find expected elements (title/pmid) within a PubMed result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single PubMed result via Selenium: {str(e)}", exc_info=True)
 

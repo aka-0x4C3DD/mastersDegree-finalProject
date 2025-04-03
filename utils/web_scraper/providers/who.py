@@ -8,8 +8,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+# Import necessary functions from sibling modules
 from ..utils import get_selenium_driver, clean_text
 from ..config import get_search_settings, is_trusted_domain
+# Import content extractor if needed for detailed content (currently not used for WHO)
+# from ..content_extractor import get_detailed_content_selenium 
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +20,8 @@ def search_who(query):
     """Search WHO website for global health news and information using Selenium"""
     settings = get_search_settings()
     base_url = "https://www.who.int"
-    search_url = f"{base_url}/search?query={quote_plus(query)}"
+    # Updated search URL structure
+    search_url = f"{base_url}/home/search-results?indexCatalogue=genericsearchindex1&searchQuery={quote_plus(query)}&wordsMode=AnyWord"
     results = []
     driver = None # Initialize driver variable
     try:
@@ -29,25 +33,35 @@ def search_who(query):
         logger.info(f"Navigating to WHO search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[contains(@class, 'sf-search-results')]"
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # Example: Look for a div that likely contains the results list
+        results_container_selector = "div.results-list" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("WHO search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//div[contains(@class, 'sf-search-results__item')]"
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # Example: Find list items or divs representing individual results within the container
+        result_items_selector = f"{results_container_selector} div.result-item" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on WHO.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//a[contains(@class, 'sf-search-results__title')]"
-                snippet_elem_xpath = ".//div[contains(@class, 'sf-search-results__description')]"
+                # Use relative CSS Selectors (adjust if needed)
+                # Example: Find the first link within the item for the title
+                title_elem_selector = "a.result-title" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find a paragraph or div with a description class
+                snippet_elem_selector = "p.result-description" # Placeholder - VERIFY THIS SELECTOR
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
-                snippet_elem = item.find_element(By.XPATH, snippet_elem_xpath)
+                title_elem = item.find_element(By.CSS_SELECTOR, title_elem_selector)
+                
+                # Try to find snippet, fallback to title if not found
+                try:
+                    snippet_elem = item.find_element(By.CSS_SELECTOR, snippet_elem_selector)
+                    snippet = clean_text(snippet_elem.text)
+                except NoSuchElementException:
+                    snippet = title_elem.text.strip() # Fallback
 
                 title = title_elem.text.strip()
                 link = title_elem.get_attribute('href')
@@ -61,7 +75,6 @@ def search_who(query):
                     logger.debug(f"Skipping non-trusted domain: {link}")
                     continue
 
-                snippet = clean_text(snippet_elem.text) if snippet_elem else title
                 content = snippet # No detailed content fetching for WHO currently
 
                 if title and content:
@@ -75,7 +88,7 @@ def search_who(query):
                      logger.warning("Found WHO result item but couldn't extract title/content.")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements (title/snippet) within a WHO result item.")
+                logger.warning("Could not find expected elements (title/snippet) within a WHO result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single WHO result via Selenium: {str(e)}", exc_info=True)
 

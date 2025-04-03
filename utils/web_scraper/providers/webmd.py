@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 def search_webmd(query):
     """Search WebMD for medical information using Selenium"""
     settings = get_search_settings()
-    search_url = f"https://www.webmd.com/search/search_results/default.aspx?query={quote_plus(query)}"
+    # Updated WebMD search URL structure
+    search_url = f"https://www.webmd.com/search?query={quote_plus(query)}"
     base_url = "https://www.webmd.com"
     results = []
     driver = None # Initialize driver variable
@@ -29,25 +30,29 @@ def search_webmd(query):
         logger.info(f"Navigating to WebMD search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[contains(@class, 'search-results-container-wrapper')]"
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # Example: Look for a div with class 'search-results-container-wrapper'
+        results_container_selector = "div.search-results-container-wrapper" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("WebMD search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//div[contains(@class, 'search-results-doc-container')]"
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # Example: Find divs with class 'search-results-doc-container'
+        result_items_selector = f"{results_container_selector} div.search-results-doc-container" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on WebMD.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//a[contains(@class, 'search-results-doc-title-link')]"
-                snippet_elem_xpath = ".//p[contains(@class, 'search-results-doc-description')]"
+                # Use relative CSS Selectors (adjust if needed)
+                # Example: Find link with class 'search-results-doc-title-link'
+                title_elem_selector = "a.search-results-doc-title-link" # Placeholder - VERIFY THIS SELECTOR
+                # Example: Find paragraph with class 'search-results-doc-description'
+                snippet_elem_selector = "p.search-results-doc-description" # Placeholder - VERIFY THIS SELECTOR
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
-                snippet_elem = item.find_element(By.XPATH, snippet_elem_xpath)
+                title_elem = item.find_element(By.CSS_SELECTOR, title_elem_selector)
+                snippet_elem = item.find_element(By.CSS_SELECTOR, snippet_elem_selector)
 
                 title = title_elem.text.strip()
                 link = title_elem.get_attribute('href')
@@ -75,7 +80,7 @@ def search_webmd(query):
                      logger.warning("Found WebMD result item but couldn't extract title/content.")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements (title/snippet) within a WebMD result item.")
+                logger.warning("Could not find expected elements (title/snippet) within a WebMD result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single WebMD result via Selenium: {str(e)}", exc_info=True)
 

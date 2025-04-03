@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
+# Import necessary functions from sibling modules
 from ..utils import get_selenium_driver, clean_text
 from ..config import get_search_settings, is_trusted_domain
 from ..content_extractor import get_detailed_content_selenium # Use Selenium version
@@ -30,24 +31,27 @@ def search_medical_news_today(query):
         logger.info(f"Navigating to Medical News Today search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[contains(@class, 'css-1k8qqf1')]" # Example, might change
+        # Wait for search results container using CSS Selector (adjust if needed)
+        # WARNING: Class names like 'css-...' are often auto-generated and unstable. VERIFY THIS!
+        results_container_selector = "div.css-1k8qqf1" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("Medical News Today search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//a[contains(@class, 'css-ni2lnp')]" # Example, might change
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        # WARNING: Class names like 'css-...' are often auto-generated and unstable. VERIFY THIS!
+        result_items_selector = f"{results_container_selector} a.css-ni2lnp" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on Medical News Today.")
 
         for item in search_results_elements:
             try:
-                # Use relative XPath
-                title_elem_xpath = ".//span[contains(@class, 'css-u1w2sb')]" # Example, might change
+                # Use relative CSS Selector (adjust if needed)
+                # WARNING: Class names like 'css-...' are often auto-generated and unstable. VERIFY THIS!
+                title_elem_selector = "span.css-u1w2sb" # Placeholder - VERIFY THIS SELECTOR
 
-                title_elem = item.find_element(By.XPATH, title_elem_xpath)
-                title = title_elem.text.strip()
+                # The link element itself often contains the title or relevant text
+                title = item.text.strip() # Use text from the link element
                 link = item.get_attribute('href')
 
                 # Ensure link is absolute
@@ -83,7 +87,7 @@ def search_medical_news_today(query):
                     logger.debug(f"Extracted MNT result (title only): {title[:50]}...")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements within a Medical News Today result item.")
+                logger.warning("Could not find expected elements within a Medical News Today result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single Medical News Today result via Selenium: {str(e)}", exc_info=True)
 

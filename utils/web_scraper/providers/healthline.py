@@ -30,20 +30,20 @@ def search_healthline(query):
         logger.info(f"Navigating to Healthline search URL: {search_url}")
         driver.get(search_url)
 
-        # Wait for search results container (adjust XPath if needed)
-        results_container_xpath = "//div[contains(@class, 'css-1t10xxp')]" # Example, might change
+        # Wait for search results container using CSS Selector (adjust if needed)
+        results_container_selector = "div.css-1t10xxp" # Placeholder - VERIFY THIS SELECTOR
         wait = WebDriverWait(driver, settings['timeout_seconds'])
-        wait.until(EC.presence_of_element_located((By.XPATH, results_container_xpath)))
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, results_container_selector)))
         logger.debug("Healthline search results container located.")
 
-        # Find result elements (adjust XPath if needed)
-        result_items_xpath = f"{results_container_xpath}//a[contains(@class, 'css-1qhn6m6')]" # Example, might change
-        search_results_elements = driver.find_elements(By.XPATH, result_items_xpath)[:settings['max_results']]
+        # Find result elements using CSS Selector (adjust if needed)
+        result_items_selector = f"{results_container_selector} a.css-1qhn6m6" # Placeholder - VERIFY THIS SELECTOR
+        search_results_elements = driver.find_elements(By.CSS_SELECTOR, result_items_selector)[:settings['max_results']]
         logger.info(f"Found {len(search_results_elements)} potential result elements on Healthline.")
 
         for item in search_results_elements:
             try:
-                # Healthline links contain the title directly
+                # Healthline links often contain the title directly
                 title = item.text.strip()
                 link = item.get_attribute('href')
 
@@ -80,7 +80,7 @@ def search_healthline(query):
                     logger.debug(f"Extracted Healthline result (title only): {title[:50]}...")
 
             except NoSuchElementException:
-                logger.warning("Could not find expected elements within a Healthline result item.")
+                logger.warning("Could not find expected elements within a Healthline result item using CSS selectors.")
             except Exception as e:
                 logger.error(f"Error extracting single Healthline result via Selenium: {str(e)}", exc_info=True)
 
