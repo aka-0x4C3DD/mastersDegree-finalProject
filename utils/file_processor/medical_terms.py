@@ -38,7 +38,8 @@ Medical Terms:"""
 
 
 # Modified function to use LLM
-def extract_search_keywords(text: str, model_manager, max_keywords=20) -> str:
+# Reduce the default max_keywords significantly
+def extract_search_keywords(text: str, model_manager, max_keywords=7) -> str:
     """
     Extracts relevant keywords from text using the primary LLM
     for use in web searches. Returns a space-separated string.
@@ -47,8 +48,8 @@ def extract_search_keywords(text: str, model_manager, max_keywords=20) -> str:
         logger.warning("Model manager not available or text is empty. Cannot extract keywords.")
         return ""
 
-    # Simpler, more direct prompt
-    prompt = f"""Extract the main and medical keywords from the following text, suitable for a web search. List only the keywords, separated by spaces. Maximum {max_keywords} keywords.
+    # Updated prompt requesting fewer, space-separated keywords
+    prompt = f"""Analyze the following text and extract the {max_keywords} most important keywords or key phrases suitable for a web search about the main medical topics discussed. List only the keywords/phrases, separated by spaces. Focus on nouns, proper nouns, medical conditions, treatments, and symptoms.
 
 Text: "{text}"
 
@@ -73,6 +74,7 @@ Keywords:"""
         # Optional: Limit the number of words just in case
         keyword_list = keyword_string.split()
         # Filter out very short words that are unlikely to be useful keywords
+        # Ensure the final list respects max_keywords
         final_keywords = [kw for kw in keyword_list if len(kw) > 2][:max_keywords]
         keyword_string = " ".join(final_keywords)
 
