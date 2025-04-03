@@ -10,7 +10,8 @@ from utils.file_processor.medical_terms import extract_search_keywords # Import 
 logger = logging.getLogger(__name__)
 query_bp = Blueprint('query', __name__)
 
-def register_query_routes(app, model_manager: ModelManager):
+# Modify the function signature to accept device_config
+def register_query_routes(app, model_manager: ModelManager, device_config):
     """Registers query-related API routes."""
 
     @query_bp.route('/query', methods=['POST'])
