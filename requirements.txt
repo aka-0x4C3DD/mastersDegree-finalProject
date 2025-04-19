@@ -2,11 +2,8 @@ torch
 transformers
 # spacy  # Removed
 # scispacy # Removed
-beautifulsoup4
 flask
 requests # Keep requests for now
-selenium # Added Selenium
-webdriver-manager # Added for automatic driver management
 nltk
 pandas
 scikit-learn
@@ -21,6 +18,7 @@ PyPDF2
 pytesseract
 tabula-py
 pdf2image
+playwrigh  # Added for Playwright-based web scraping
 # Hardware-specific extensions will be installed automatically by run.bat
 # - Intel CPUs: intel-extension-for-pytorch
 # - AMD GPUs: ROCm-enabled PyTorch (if available)
