@@ -43,6 +43,10 @@ REM Install dependencies
 echo Installing required packages...
 pip install -r requirements.txt
 
+REM Install Playwright browsers
+echo Installing Playwright browsers...
+playwright install
+
 REM Check for system dependencies
 echo Checking system dependencies for advanced file processing and web scraping...
 python -c "from utils.dependency_checker import check_dependencies; check_dependencies()"
