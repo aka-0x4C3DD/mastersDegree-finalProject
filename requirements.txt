@@ -18,7 +18,7 @@ PyPDF2
 pytesseract
 tabula-py
 pdf2image
-playwrigh  # Added for Playwright-based web scraping
+playwright  # Added for Playwright-based web scraping
 # Hardware-specific extensions will be installed automatically by run.bat
 # - Intel CPUs: intel-extension-for-pytorch
 # - AMD GPUs: ROCm-enabled PyTorch (if available)
