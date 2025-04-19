@@ -3,6 +3,7 @@ Query processing endpoints
 """
 import logging
 import re # Import the regular expression module
+import asyncio
 from flask import Blueprint, request, jsonify
 from server.model_management import ModelManager
 from utils.web_scraper import search_medical_sites # Use the refactored web scraper entry point
@@ -43,7 +44,8 @@ def register_query_routes(app, model_manager: ModelManager, device_config):
                 # --- End Keyword Extraction ---
 
                 logger.info(f"Performing web search with term: '{search_term}'")
-                web_results = search_medical_sites(search_term, max_results=3)
+                # Run the async Playwright-based search
+                web_results = asyncio.run(search_medical_sites(search_term, max_results=3))
 
                 if web_results:
                     search_context = "\n\nRelevant information from trusted sources:\n"
