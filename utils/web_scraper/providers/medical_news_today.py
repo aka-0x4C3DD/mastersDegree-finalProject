@@ -8,16 +8,21 @@ from ..playwright_utils import PlaywrightManager
 
 logger = logging.getLogger(__name__)
 
-async def search_medical_news_today(query, max_results=5, timeout=8000):
+async def search_medical_news_today(query, max_results=5, timeout=None):
+    # Get timeout from config if not provided
+    if timeout is None:
+        from ..config import get_search_settings
+        settings = get_search_settings()
+        timeout = settings.get('timeout_seconds', 20) * 1000  # Convert to ms
     """Search Medical News Today for information using Playwright"""
     from ..config import is_trusted_domain
     results = []
     search_url = f"https://www.medicalnewstoday.com/search?q={quote_plus(query)}"
     base_url = "https://www.medicalnewstoday.com"
-    results_container_selector = "ul.search-results-list"
-    result_items_selector = "ul.search-results-list > li"
-    title_selector = "a.search-result-link"
-    snippet_selector = "p.search-result-description"
+    results_container_selector = "div.css-1jfv4tp"
+    result_items_selector = "div.css-1jfv4tp > a"
+    title_selector = "h2.css-1qm7ukr"
+    snippet_selector = "p.css-1qo2iqo"
 
     async with PlaywrightManager() as pw:
         page, context = await pw.new_page()

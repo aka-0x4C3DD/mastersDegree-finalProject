@@ -12,7 +12,7 @@ def load_trusted_domains_from_config():
     """Load trusted medical domains from config.ini file"""
     config = configparser.ConfigParser()
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.ini')
-    
+
     if os.path.exists(config_path):
         try:
             config.read(config_path)
@@ -27,7 +27,7 @@ def load_trusted_domains_from_config():
             logger.error(f"Error loading config.ini: {str(e)}")
     else:
         logger.warning(f"Config file not found at {config_path}")
-    
+
     # Return a minimal fallback list if config loading fails
     logger.warning("Using minimal fallback list of trusted domains")
     return [
@@ -51,10 +51,10 @@ def is_trusted_domain(url):
     """Check if a URL belongs to a trusted medical domain"""
     if not url or not validators.url(url):
         return False
-    
+
     # Convert URL to string if it's not already
     url_str = str(url)
-    
+
     # Check if any trusted domain is in the URL
     return any(trusted_domain in url_str for trusted_domain in TRUSTED_DOMAINS)
 
@@ -62,31 +62,31 @@ def get_search_settings():
     """Get search settings from config"""
     config = configparser.ConfigParser()
     config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config.ini')
-    
+
     # Default settings
     settings = {
         'max_results': 5,
-        'timeout_seconds': 10,
+        'timeout_seconds': 20,  # Increased default timeout to 20 seconds
         'enable_detailed_content': True
     }
-    
+
     if os.path.exists(config_path):
         try:
             config.read(config_path)
             if 'search_settings' in config:
                 section = config['search_settings']
-                
+
                 if 'max_results' in section:
                     settings['max_results'] = section.getint('max_results')
-                
+
                 if 'timeout_seconds' in section:
                     settings['timeout_seconds'] = section.getint('timeout_seconds')
-                    
+
                 if 'enable_detailed_content' in section:
                     settings['enable_detailed_content'] = section.getboolean('enable_detailed_content')
-                    
+
             logger.info(f"Loaded search settings from config: {settings}")
         except Exception as e:
             logger.error(f"Error loading search settings: {str(e)}")
-            
+
     return settings

@@ -8,7 +8,12 @@ from ..playwright_utils import PlaywrightManager
 
 logger = logging.getLogger(__name__)
 
-async def search_who(query, max_results=5, timeout=8000):
+async def search_who(query, max_results=5, timeout=None):
+    # Get timeout from config if not provided
+    if timeout is None:
+        from ..config import get_search_settings
+        settings = get_search_settings()
+        timeout = settings.get('timeout_seconds', 20) * 1000  # Convert to ms
     """Search WHO website for global health news and information using Playwright"""
     from ..config import is_trusted_domain
     results = []

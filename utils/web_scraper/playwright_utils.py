@@ -8,10 +8,18 @@ from playwright.async_api import async_playwright, TimeoutError as PlaywrightTim
 logger = logging.getLogger(__name__)
 
 class PlaywrightManager:
-    def __init__(self, headless=True):
+    def __init__(self, headless=True, timeout=None):
         self.headless = headless
         self.browser = None
         self.playwright = None
+
+        # Get timeout from config if not provided
+        if timeout is None:
+            from .config import get_search_settings
+            settings = get_search_settings()
+            self.timeout = settings.get('timeout_seconds', 15) * 1000  # Convert to ms
+        else:
+            self.timeout = timeout
 
     async def __aenter__(self):
         self.playwright = await async_playwright().start()
@@ -29,7 +37,12 @@ class PlaywrightManager:
         page = await context.new_page()
         return page, context
 
-async def get_text_content(page, selector, timeout=8000):
+async def get_text_content(page, selector, timeout=None):
+    # Get timeout from config if not provided
+    if timeout is None:
+        from .config import get_search_settings
+        settings = get_search_settings()
+        timeout = settings.get('timeout_seconds', 15) * 1000  # Convert to ms
     try:
         await page.wait_for_selector(selector, timeout=timeout)
         element = await page.query_selector(selector)
@@ -39,7 +52,12 @@ async def get_text_content(page, selector, timeout=8000):
         logger.warning(f"Timeout waiting for selector: {selector}")
     return None
 
-async def get_attribute(page, selector, attribute, timeout=8000):
+async def get_attribute(page, selector, attribute, timeout=None):
+    # Get timeout from config if not provided
+    if timeout is None:
+        from .config import get_search_settings
+        settings = get_search_settings()
+        timeout = settings.get('timeout_seconds', 15) * 1000  # Convert to ms
     try:
         await page.wait_for_selector(selector, timeout=timeout)
         element = await page.query_selector(selector)
@@ -49,7 +67,12 @@ async def get_attribute(page, selector, attribute, timeout=8000):
         logger.warning(f"Timeout waiting for selector: {selector}")
     return None
 
-async def get_elements(page, selector, timeout=8000):
+async def get_elements(page, selector, timeout=None):
+    # Get timeout from config if not provided
+    if timeout is None:
+        from .config import get_search_settings
+        settings = get_search_settings()
+        timeout = settings.get('timeout_seconds', 15) * 1000  # Convert to ms
     try:
         await page.wait_for_selector(selector, timeout=timeout)
         return await page.query_selector_all(selector)

@@ -48,10 +48,22 @@ def extract_search_keywords(text: str, model_manager, max_keywords=7) -> str:
         logger.warning("Model manager not available or text is empty. Cannot extract keywords.")
         return ""
 
-    # Updated prompt requesting fewer, space-separated keywords
-    prompt = f"""Analyze the following text and extract the {max_keywords} most important keywords or key phrases suitable for a web search about the main medical topics discussed. List only the keywords/phrases, separated by spaces. Focus on nouns, proper nouns, medical conditions, treatments, and symptoms.
+    # Extract important words from the original query to ensure they're preserved
+    important_words = [word for word in text.split() if len(word) > 3 and word.lower() not in
+                      ['and', 'the', 'for', 'with', 'from', 'about', 'that', 'this', 'these', 'those']]
 
-Text: "{text}"
+    # Improved prompt with more specific instructions and emphasis on staying relevant to the query
+    prompt = f"""Extract EXACTLY {max_keywords} specific search keywords from the following query.
+
+Your task is to identify the most important search terms that would help find relevant medical information about the EXACT topic in the query.
+
+1. Focus on diseases, locations, dates, statistics, medical conditions, and specific entities mentioned.
+2. Include proper nouns, medical terms, and specific identifiers.
+3. DO NOT introduce topics that aren't explicitly mentioned in the original query.
+4. DO NOT generalize to broader medical topics unless the query is vague.
+5. Return ONLY the keywords separated by spaces, with no additional text.
+
+Query: "{text}"
 
 Keywords:"""
 
@@ -71,12 +83,24 @@ Keywords:"""
         if "keywords:" in keyword_string.lower():
              keyword_string = keyword_string.split("Keywords:")[-1].strip()
 
-        # Optional: Limit the number of words just in case
+        # Process the keywords
         keyword_list = keyword_string.split()
         # Filter out very short words that are unlikely to be useful keywords
-        # Ensure the final list respects max_keywords
-        final_keywords = [kw for kw in keyword_list if len(kw) > 2][:max_keywords]
-        keyword_string = " ".join(final_keywords)
+        filtered_keywords = [kw for kw in keyword_list if len(kw) > 2][:max_keywords]
+
+        # Validation: Check if the extracted keywords seem relevant to the original query
+        # Extract lowercase versions of original query words and keywords for comparison
+        query_words = set(word.lower() for word in text.split() if len(word) > 3)
+        keyword_words = set(word.lower() for word in filtered_keywords)
+
+        # If there's no overlap between the query and keywords, it might be irrelevant
+        if query_words and not query_words.intersection(keyword_words) and len(filtered_keywords) > 0:
+            logger.warning("Extracted keywords don't appear related to the original query. Adding important query terms.")
+            # Add important words from the original query to ensure relevance
+            combined_keywords = filtered_keywords[:max(1, max_keywords-3)] + important_words[:min(3, len(important_words))]
+            keyword_string = " ".join(combined_keywords)
+        else:
+            keyword_string = " ".join(filtered_keywords)
 
         # If after processing, the keyword string is empty, fallback to original text
         if not keyword_string:
