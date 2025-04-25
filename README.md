@@ -116,7 +116,7 @@ graph TB
         HE[Health Endpoints]
         QE[Query Endpoints]
         FE[File Processing Endpoints]
-        ME[Medical Term Detection (LLM)] %% Updated
+        ME[Medical Term Detection (LLM)] 
     end
 
     %% Core Services
@@ -129,7 +129,7 @@ graph TB
     %% Model Layer
     subgraph "Model Management"
         ML[Model Loader]
-        IE[Inference Engine (LLM)] %% Updated
+        IE[Inference Engine (LLM)] 
         subgraph "Distribution Strategies"
             MP[Model Parallelism]
             PP[Pipeline Parallelism]
@@ -175,7 +175,7 @@ graph TB
     QE --> QP
     FE --> FP
     QP --> WS
-    ME --> QP %% Term detection might feed back into query processing or analysis
+    ME --> QP 
     
     %% Core Services to Model Management
     QP --> ML
@@ -219,7 +219,7 @@ sequenceDiagram
     participant FileProc as File Processor
     participant WebSearch as Web Search Integration
     participant ModelMgmt as Model Management
-    participant InfEngine as Inference Engine (LLM) %% Updated
+    participant InfEngine as Inference Engine (LLM) 
     participant DistStrat as Distribution Strategies
     participant HWAccel as Hardware Acceleration
     participant ExtSrc as External Medical Sources
@@ -231,7 +231,7 @@ sequenceDiagram
     
     %% Web search if enabled
     alt Web search enabled
-        QueryProc->>ModelMgmt: Extract Keywords using LLM %% Updated
+        QueryProc->>ModelMgmt: Extract Keywords using LLM 
         ModelMgmt-->>QueryProc: Return keywords
         QueryProc->>WebSearch: Search using keywords
         WebSearch->>ExtSrc: Query trusted medical websites
@@ -285,7 +285,7 @@ sequenceDiagram
             FileProc->>FileProc: Process plain text
         end
         
-        FileProc->>ModelMgmt: Request file analysis & term extraction (LLM) %% Updated
+        FileProc->>ModelMgmt: Request file analysis & term extraction (LLM) 
         ModelMgmt->>InfEngine: Generate analysis & terms
         InfEngine-->>ModelMgmt: Return analysis & terms
         ModelMgmt-->>FileProc: Return analysis results
@@ -307,7 +307,7 @@ sequenceDiagram
 - PyTorch compatible hardware (GPU recommended)
 - Internet connection for web search features
 - **Microsoft C++ Build Tools**: Required on Windows for compiling certain Python packages with C extensions (e.g., some dependencies for advanced file processing). Download from [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/). Ensure "C++ build tools" are selected during installation.
-- **WebDriver**: Required for web scraping using Selenium. Download the appropriate WebDriver for your browser (e.g., [ChromeDriver](https://chromedriver.chromium.org/downloads) for Chrome, [GeckoDriver](https://github.com/mozilla/geckodriver/releases) for Firefox) and ensure its executable is in your system's PATH or specify the path during configuration (not yet implemented).
+- **WebDriver**: Required for web scraping using Microsoft Playwright. Download and install Playwright browsers by running `playwright install` after installing the Python package. No separate browser driver is needed.
 
 ### Installation
 
