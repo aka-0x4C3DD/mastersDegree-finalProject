@@ -116,7 +116,7 @@ graph TB
         HE[Health Endpoints]
         QE[Query Endpoints]
         FE[File Processing Endpoints]
-        ME[Medical Term Detection (LLM)] 
+        ME[Medical Term Detection through LLM] 
     end
 
     %% Core Services
@@ -129,7 +129,7 @@ graph TB
     %% Model Layer
     subgraph "Model Management"
         ML[Model Loader]
-        IE[Inference Engine (LLM)] 
+        IE[Inference Engine of LLM] 
         subgraph "Distribution Strategies"
             MP[Model Parallelism]
             PP[Pipeline Parallelism]
